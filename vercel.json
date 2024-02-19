@@ -1,5 +1,5 @@
 {
-    "name": "Tour-Haven-Application",
+    "name": "tour-haven-application",
     "builds": [
       {
         "src": "server.js",
