@@ -10,6 +10,13 @@ exports.createUser = async (req,res)=>{
 
         // get the user's input
         const {firstName,lastName,email,phoneNumber,password,confirmPassword} = req.body
+
+        // check if tne user entered all fields
+        if(!firstName || !lastName || !email || !phoneNumber || !password || !confirmPassword){
+            return res.status(400).json({
+                error:"All fields must be field"
+            })
+        }
         
         // check if the email already exist
         const checkEmail = await userModel.findOne({email:email})
@@ -101,7 +108,7 @@ exports.verifyUser = async (req,res)=>{
         }
         
         // find by id and verify
-         const verify = await userModel.findByIdAndUpdate(ID,{isVerified:true}, {new:true})
+         await userModel.findByIdAndUpdate(ID,{isVerified:true}, {new:true})
     
         res.status(200).json({
             message: "you have been verified",
@@ -119,6 +126,13 @@ exports.signIn = async (req,res)=>{
 
         // get the users input
         const {email,password } = req.body;
+
+        // check if tne user entered all fields
+        if(!email || !password){
+            return res.status(400).json({
+                error:"All fields must be field"
+            })
+        }
 
         // check if tghe user exist
         const user = await userModel.findOne({email:email.toLowerCase()})
@@ -284,6 +298,11 @@ exports.forgetPassword = async (req,res)=>{
 
         // request for the users email
         const {email} = req.body
+        if (!email) {
+            return res.status(404).json({
+              error: "Please enter your email address"
+            });
+          }
 
         // check if the users email exist in the dataBase
         const user = await userModel.findOne({email:email.toLowerCase()})

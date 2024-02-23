@@ -3,7 +3,9 @@ const locModel = require("../models/locationModel")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const sendMail = require("../Utils/sendMail")
-const dynamicMail = require("../Utils/emailtemplate")
+const {hotelMail, resetPasswordMail} = require("../Utils/emailtemplate")
+const cloud = require("../config/cloudConfig")
+const { get } = require("mongoose")
 
 
 // create a new hotel
@@ -12,6 +14,13 @@ exports.createhotel = async (req,res)=>{
 
         // get the hotel's input
         const {hotelName,email,phoneNumber,city,address,password,confirmPassword} = req.body
+
+        // check if tne hotel entered all fields
+        if(!hotelName || !email || !phoneNumber || !city || !address || !password || !confirmPassword){
+            return res.status(400).json({
+                error:"All fields must be field"
+            })
+        }
         
         // check if the email already exist
         const checkEmail = await hotelModel.findOne({email:email})
@@ -31,6 +40,11 @@ exports.createhotel = async (req,res)=>{
         const saltPass = bcrypt.genSaltSync(12)
         const hash = bcrypt.hashSync(password,saltPass)
 
+        // upload image
+        const file = req.files.profileImage.tempFilePath
+
+        const result = await cloud.uploader.upload(file)
+
         // create the hotel
         const hotel = await hotelModel.create({
             hotelName:hotelName.toLowerCase().charAt(0).toUpperCase() + hotelName.slice(1),
@@ -38,7 +52,7 @@ exports.createhotel = async (req,res)=>{
             phoneNumber,
             address,
             city,
-            hotelImage,
+            profileImage:result.secure_url,
             password:hash
         })
 
@@ -51,8 +65,9 @@ exports.createhotel = async (req,res)=>{
             })
         }
 
-        // then push the hotel's id to the existing loc or the new one
+        // then push the hotel's id to the existing loc or the new one and save
         location.hotel.push(hotel._id)
+        await location.save()
 
         // generate a token for the hotel
         const token = jwt.sign({
@@ -62,8 +77,8 @@ exports.createhotel = async (req,res)=>{
         },process.env.jwtKey,{expiresIn:"5mins"})
 
         // verify the hotels email
-        const link = `${req.protocol}://${req.get("host")}/resetPassword/${token}`
-        const html = dynamicMail(link,hotel.hotelName,hotel.lastName.slice(0,1).toUpperCase())
+        const link = `${req.protocol}://${req.get("host")}/verifyhotels/${token}`
+        const html = hotelMail(link,hotel.hotelName)
 
         sendMail({
             email:hotel.email,
@@ -130,3 +145,433 @@ exports.verifyhotel = async (req,res)=>{
         })
     }
 }
+
+exports.resendVerification = async (req,res)=>{
+    try{
+
+        // get the hotel's email
+        const {email} = req.body
+        if (!email) {
+            return res.status(404).json({
+              error: "Please enter your email address"
+            });
+          }
+      
+
+        // find the hotel with the email
+        const hotel = await hotelModel.findOne({email:email.toLowerCase()})
+        if(!hotel){
+            return res.status(404).json({
+                error:"email not found"
+            })
+        }
+
+       // check if the hotel is already verified
+        if(hotel.isVerified === true){
+            return res.status(400).json({
+                error:"hotel already verified"
+            })
+        }        
+
+        // generate a token for the hotel
+        const token = jwt.sign({
+            hotelId:hotel._id,
+            email:hotel.email,
+            tel:hotel.phoneNumber
+        },process.env.jwtKey,{expiresIn: "5mins"})
+
+        // verify the hotels email
+        const link = `${req.protocol}://${req.get("host")}/api/v1/users/verifyhotels/${token}`
+        const html = dynamicMail(link,hotel.hotelName)
+
+        sendMail({
+            email:hotel.email,
+            subject: "KIND VERIFY YOUR ACCOUNT",
+            html:html
+        })
+
+        res.status(200).json({
+            message: "verification mail sent to your email"
+        })
+
+
+    }catch(err){
+        if (err instanceof jwt.JsonWebTokenError) {
+            return res.status(400).json({
+                error:"link expired"
+            })
+        }
+        res.status(500).json({
+            error:err.message
+        })
+    }
+}
+
+exports.signIn = async (req,res)=>{
+    try{
+
+        // get the hotel's input
+        const {email,password } = req.body;
+
+        // check if tne hotel entered all fields
+        if(!email || !password){
+            return res.status(400).json({
+                error:"All fields must be field"
+            })
+        }
+
+        // check if tghe hotel exist
+        const hotel = await hotelModel.findOne({email:email.toLowerCase()})
+        if(!hotel){
+            return res.status(400).json({
+                message: "wrong email"
+            })
+        }
+
+        // check for pasword
+        const checkPassword = bcrypt.compareSync(password,hotel.password)
+        if (!checkPassword) {
+            return res.status(400).json({
+                message: "wrong password"
+            })
+        }
+
+        // check for verification
+        // if(hotel.isVerified  === false){
+        //     return res.status(400).json({
+        //         message: "kindly verify your email so you can login"
+        //     })
+        // }
+
+        // generate a token for the hotel if all detail are correct
+        const token = jwt.sign({
+            hotelId:hotel._id,
+            email:hotel.email,
+            tel:hotel.phoneNumber
+        },process.env.jwtKey,{expiresIn:"1d"})
+
+        // throw a success respomse
+        res.status(200).json({
+            message:"Login successful",
+            data:token
+        })
+
+    }catch(err){
+        res.status(500).json({
+            error:err.message
+        })
+    }
+}
+
+exports.forgetPassword = async (req,res)=>{
+    try {
+
+        // request for the hotel's email
+        const {email} = req.body
+        if (!email) {
+            return res.status(404).json({
+              error: "Please enter your email address"
+            });
+          }
+
+        // check if the hotels email exist in the dataBase
+        const hotel = await hotelModel.findOne({email:email.toLowerCase()})
+        if (!hotel) {
+            return res.status(404).json({
+                error:"hotel not found"
+            })
+        }
+
+        // if hotel found generate a new token for the hotel
+        const token = jwt.sign({hotelId:hotel._id},process.env.jwtKey,{expiresIn:"10mins"})
+
+        const link = `${req.protocol}://${req.get("host")}/reset_password/${token}`
+        const html =  resetPasswordMail(link, hotel.firstName)
+
+        sendMail({
+            email: hotel.email,
+            subject:"VERIFY YOUR EMAIL TO RESET PASSWORD",
+            html:html
+        })
+
+        // throw a success message
+        res.status(200).json({
+            message:"Email sent successfully"
+        })
+        
+    } catch (err) {
+        if (err instanceof jwt.JsonWebTokenError) {
+            return res.status(400).json({
+                error:"link expired"
+            })
+        }
+        res.status(500).json({
+            error:err.message
+        })
+    }
+}
+
+exports.resetPassword = async (req,res)=>{
+    try {
+
+        // get the token from the params
+        const {token} = req.params
+        if (!token) {
+            return res.status(404).json({
+                error:"token not found"
+            })
+        }
+
+        // get the hotel's input
+        const {newPassword,confirmPassword} = req.body
+
+        // check if the fields are empty
+        if (confirmPassword !== newPassword) {
+            return res.status(400).json({
+                error:"password does not match"
+            })
+        }
+
+        // encrypt the token
+        const decodeToken = jwt.verify(token,process.env.jwtKey)
+
+        // extract the hotel's id        
+        const ID = decodeToken.hotelId
+
+        // find the hotel with the token
+        const hotel = await hotelModel.findById(ID)
+        if (!hotel) {
+            return res.status(404).json({
+                error:"hotel not found"
+            })
+        }
+
+        // bcrypt the password
+        const saltPass = bcrypt.genSaltSync(12)
+        const hash = bcrypt.hashSync(newPassword,saltPass)
+
+        // save the changes
+        hotel.password = hash
+        await hotel.save()
+
+        // return success message
+        res.status(200).json({
+            message: "password reset successfully"
+        })
+        
+    } catch (err) {
+        res.status(500).json({
+            error:err.message
+        })
+    }
+}
+
+exports.updateHotel = async(req,res)=>{
+    try {
+
+        // get the hotel's id
+        const ID = req.user.hotelId
+
+        // get the hotel's input
+        const {hotelName,phoneNumber,email,city,address} = req.body
+
+        // find tyhe hotel with the id
+        const hotel = await hotelModel.findById(ID)
+        if (!hotel) {
+            return res.status(404).json({
+                error:"hotel not found"
+            })
+        }
+
+        // create an instance of what the hotel can edit
+        const editOnly = {
+            hotelName,
+            email,
+            phoneNumber,
+            city,
+            address
+        }
+
+        // eddit the details
+        const updated = await hotelModel.findByIdAndUpdate(ID,editOnly,{new:true})
+        if (!updated) {
+            return res.status(400).json({
+                error:"error updating hotel"
+            })
+        }
+
+        // success message
+        res.status(200).json({
+            message:"hotel updatted successfully"
+        })
+        
+    } catch (err) {
+        res.status(500).json({
+            error:err.message
+        })
+    }
+}
+
+exports.changeProfieImage = async(req,res)=>{
+    try {
+
+        // get the id from the token
+        const ID = req.user.hotelId
+
+        // get the hotel with the id
+        const hotel = await hotelModel.findById(ID)
+        if (!hotel) {
+            return res.status(404).json({
+                error:"user not found"
+            })
+        }
+
+        // detroy the prvious image/and update the new one
+        if (hotel.profileImage) {
+            const oldImage = hotel.profileImage.split("/").pop().split(".")[0]
+            await cloud.uploader.destroy(oldImage)
+
+        }
+
+        // update the new image
+        const file = req.files.profileImage.tempFilePath
+        const newImage = await cloud.uploader.upload(file)
+        await hotelModel.findByIdAndUpdate(ID,{profileImage:newImage.secure_url},{new:true})
+
+        res.status(200).json({
+            message: "picture updated"
+        })
+
+    } catch (err) {
+        res.status(500).json({
+            error:err.message
+        })
+    }
+}
+
+// location search
+exports.locationSearch = async(req,res)=>{
+    try {
+
+        // get the user's location
+       const {location} = req.body
+
+    //    find the location
+    const loc = await hotelModel.find().where("city").equals(`${location}`).populate("hotelRooms")
+    if(!loc){
+        return res.status(404).json({
+            error:"No hotels registered from this location"
+        })
+    }
+
+    res.status(200).json({
+        data:loc
+    })
+        
+    } catch (err) {
+        res.status(500).json({
+            error:err.message
+        })
+    }
+}
+exports.hotelSearch = async(req,res)=>{
+    try {
+
+        // get the user's location
+       const {hotel} = req.body
+
+    //    find the location
+    const loc = await hotelModel.findOne({hotelName:hotel}).populate("hotelRooms")
+    if(!loc){
+        return res.status(404).json({
+            error:"hotel not found"
+        })
+    }
+
+    res.status(200).json({
+        data:{
+            hotelName:loc.hotelName,
+            tel:loc.phoneNumber,
+            city:loc.city, 
+            address:loc.address,
+            rooms:loc.hotelRooms
+        }
+    })
+        
+    } catch (err) {
+        res.status(500).json({
+            error:err.message
+        })
+    }
+}
+
+exports.deleteHotel = async(req,res)=>{
+    try {
+
+        // get the hotel's id
+        const ID = req.user.hotelId
+
+        // find tyhe hotel with the id
+        const hotel = await hotelModel.findById(ID)
+        if (!hotel) {
+            return res.status(404).json({
+                error:"hotel not found"
+            })
+        }
+
+        if (hotel.profileImage) {
+            const oldImage = hotel.profileImage.split("/").pop().split(".")[0]
+            await cloud.uploader.destroy(oldImage)
+        }
+
+        // delete hotels
+        await hotelModel.findByIdAndDelete(ID)
+
+        // delete hotel rooms
+        const room = await roomModel.findOne({hotel:ID})
+
+        if(room.roomImage){
+            const oldImage = hotel.roomImage.split("/").pop().split(".")[0]
+            await cloud.uploader.destroy(oldImage)
+        }
+
+        await roomModel.deleteMany(ID)
+        
+    } catch (err) {
+        res.status(500).json({
+            error:err.message
+        })
+    }
+}
+
+exports.logOut = async (req, res) => {
+    try {
+
+        // get the hotel's id from token
+        const hotelId = req.user.hotelId;
+
+        // find the hotel
+        const hotel = await hotelModel.findById(hotelId)
+        if (!hotel) {
+            return res.status(404).json({
+                message: 'This hotel does not exist',
+            });
+        }
+
+        // get thehotels token and push to blacklist
+        const token = req.headers.authorization.split(' ')[1];
+        hotel.blackList.push(token)
+        // save the hotel
+        await hotel.save()
+
+        // return sucess message
+        res.status(200).json({
+            message: 'logged out successfull',
+            hotel
+        });
+    } catch (err) {
+        res.status(500).json({
+            message: err.message,
+        });
+    }
+};

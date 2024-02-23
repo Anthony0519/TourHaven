@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
-const userModel = require('../models/userModel');
+const hotelModel = require('../models/hotelModel');
 
-const authorization = async (req, res, next) => {
+const hotelAuth = async (req, res, next) => {
     try {
         // pass the token the token
         const auth = req.headers.authorization;
@@ -22,7 +22,7 @@ const authorization = async (req, res, next) => {
         const decodeToken = jwt.verify(token, process.env.jwtKey);
 
         // find the user
-        const user = await userModel.findById(decodeToken.userId);
+        const user = await hotelModel.findById(decodeToken.hotelId);
         if (!user) {
             return res.status(404).json({
                 message: 'oops! user logged out. Please login to continue'
@@ -30,7 +30,7 @@ const authorization = async (req, res, next) => {
         }
 
         // check if the user is loged out
-        if(user.blackList.includes(token)){
+        if(user.hotelBlacklist.includes(token)){
             return res.status(403).json({
                 message: 'oops! user logged out. Please login to continue'
             })
@@ -52,4 +52,4 @@ const authorization = async (req, res, next) => {
     }
 };
 
-module.exports = authorization;
+module.exports = hotelAuth;

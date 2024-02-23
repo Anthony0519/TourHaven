@@ -3,7 +3,7 @@ const mongoose = require("mongoose")
 const hotelLocation = new mongoose.Schema({
     hotel:[{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"hotel",
+        ref:"hotels",
     }],
     loc:{
         type:String,

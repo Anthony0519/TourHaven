@@ -2,11 +2,11 @@ const mongoose = require("mongoose")
 
 const hotelSchema = new mongoose.Schema({
     hotelName:{
-        type:Strings,
+        type:String,
         required:true,
     },
     email:{
-        type:Strings,
+        type:String,
         required:true,
         unique:true
     },
@@ -14,19 +14,23 @@ const hotelSchema = new mongoose.Schema({
         type:Number,
         required:true,
     },
-    hotelImage:{
-        type:Strings,
+    profileImage:{
+        type:String,
     },
+    hotelRooms:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"room"
+    }],
     city:{
-        type:Strings,
+        type:String,
         required:true
     },
     address:{
-        type:Strings,
+        type:String,
         required:true
     },
-    Password:{
-        type:Strings,
+    password:{
+        type:String,
         required:true,
     },
     isVerified:{
@@ -34,6 +38,7 @@ const hotelSchema = new mongoose.Schema({
         default:false,
     },
     hotelBlacklist:{
+        type:Array,
         default:[]
     },
 })
