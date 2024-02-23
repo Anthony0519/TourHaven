@@ -1,11 +1,11 @@
 const hotelModel = require("../models/hotelModel")
 const locModel = require("../models/locationModel")
+const roomModel = require("../models/roomModel")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const sendMail = require("../Utils/sendMail")
 const {hotelMail, resetPasswordMail} = require("../Utils/emailtemplate")
 const cloud = require("../config/cloudConfig")
-const { get } = require("mongoose")
 
 
 // create a new hotel
@@ -18,7 +18,7 @@ exports.createhotel = async (req,res)=>{
         // check if tne hotel entered all fields
         if(!hotelName || !email || !phoneNumber || !city || !address || !password || !confirmPassword){
             return res.status(400).json({
-                error:"All fields must be field"
+                error:"All fields must be filled"
             })
         }
         
@@ -216,7 +216,7 @@ exports.signIn = async (req,res)=>{
         // check if tne hotel entered all fields
         if(!email || !password){
             return res.status(400).json({
-                error:"All fields must be field"
+                error:"All fields must be filled"
             })
         }
 
@@ -449,6 +449,28 @@ exports.changeProfieImage = async(req,res)=>{
     }
 }
 
+// return all hotels for landing page
+exports.getAllHotels = async(req,res)=>{
+    try{
+
+        const hotels = await hotelModel.find()
+        if(hotels.length === 0){
+            return res.status(404).json({
+                error:"No registered hotel yet"
+            })
+        }
+
+        res.status(200).json({
+            data:hotels
+        })
+
+    } catch (err) {
+        res.status(500).json({
+            error:err.message
+        })
+    }
+}
+
 // location search
 exports.locationSearch = async(req,res)=>{
     try {
@@ -519,6 +541,19 @@ exports.deleteHotel = async(req,res)=>{
             })
         }
 
+         // delete hotel rooms
+        const room = await roomModel.findOne({hotel:ID})
+       if(room){
+         
+        if(room.roomImage){
+            const oldImage = room.roomImage.split("/").pop().split(".")[0]
+            await cloud.uploader.destroy(oldImage)
+        }
+
+        await roomModel.deleteMany({hotel:ID})
+
+       }
+
         if (hotel.profileImage) {
             const oldImage = hotel.profileImage.split("/").pop().split(".")[0]
             await cloud.uploader.destroy(oldImage)
@@ -527,15 +562,10 @@ exports.deleteHotel = async(req,res)=>{
         // delete hotels
         await hotelModel.findByIdAndDelete(ID)
 
-        // delete hotel rooms
-        const room = await roomModel.findOne({hotel:ID})
 
-        if(room.roomImage){
-            const oldImage = hotel.roomImage.split("/").pop().split(".")[0]
-            await cloud.uploader.destroy(oldImage)
-        }
-
-        await roomModel.deleteMany(ID)
+        res.status(200).json({
+            message:"Account deleted successfully"
+        })
         
     } catch (err) {
         res.status(500).json({

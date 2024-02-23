@@ -9,7 +9,7 @@ const hotelLocation = new mongoose.Schema({
         type:String,
         required:true
     }
-})
+},{timestamps:true})
 
 const locModel = mongoose.model("Location",hotelLocation)
 

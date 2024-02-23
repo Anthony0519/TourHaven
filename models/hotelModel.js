@@ -41,7 +41,7 @@ const hotelSchema = new mongoose.Schema({
         type:Array,
         default:[]
     },
-})
+},{timestamps:true})
 
 const hotelModel = mongoose.model("hotels",hotelSchema)
 

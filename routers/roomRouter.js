@@ -5,8 +5,8 @@ const hotelAuth = require("../middlewares/hotelAuth")
 
 router.route("/add-rooms").post(hotelAuth,uploadRoom)
 
-router.route("/update-rooms").post(hotelAuth,updateRoom)
+router.route("/update-rooms/:roomID").put(hotelAuth,updateRoom)
 
-router.route("/delete-rooms").post(hotelAuth,deleteRoom)
+router.route("/delete-rooms/:roomID").delete(hotelAuth,deleteRoom)
 
 module.exports = router

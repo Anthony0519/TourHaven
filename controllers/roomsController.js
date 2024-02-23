@@ -72,8 +72,8 @@ exports.updateRoom = async (req, res) => {
             });
         }
 
-        if (req.file) {
-            const oldImage = hotel.roomImage.split("/").pop().split(".")[0]
+        if (room.roomImage) {
+            const oldImage = room.roomImage.split("/").pop().split(".")[0]
             await cloud.uploader.destroy(oldImage)
 
         }
@@ -82,17 +82,19 @@ exports.updateRoom = async (req, res) => {
         const file = req.files.roomImage.tempFilePath
         const newImage = await cloud.uploader.upload(file)
 
-        // Update the room details
-        room.roomImage = newImage
-        room.roomType = roomType;
-        room.price = price;
+        // get the update details
+        const editedRoom = {
+            roomType,
+            price,
+            roomImage:newImage.secure_url
+        }
 
-        // Save the updated room
-        await room.save();
+        // make the update
+        const updatedRoom = await roomModel.findByIdAndUpdate(roomID,editedRoom,{new:true})
 
         res.status(200).json({
             message: "Room updated successfully",
-            room: room
+            room: updatedRoom
         });
     } catch (err) {
         res.status(500).json({
@@ -127,8 +129,8 @@ exports.deleteRoom = async (req, res) => {
 
         // Delete the room image from Cloudinary (if it exists)
         if (room.roomImage) {
-            const oldImage = hotel.roomImage.split("/").pop().split(".")[0];
-            await cloudinary.uploader.destro(oldImage);
+            const oldImage = room.roomImage.split("/").pop().split(".")[0];
+            await cloud.uploader.destroy(oldImage);
         }
 
         // Delete the room from the database

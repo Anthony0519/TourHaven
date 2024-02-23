@@ -14,7 +14,7 @@ exports.createUser = async (req,res)=>{
         // check if tne user entered all fields
         if(!firstName || !lastName || !email || !phoneNumber || !password || !confirmPassword){
             return res.status(400).json({
-                error:"All fields must be field"
+                error:"All fields must be filled"
             })
         }
         
@@ -130,7 +130,7 @@ exports.signIn = async (req,res)=>{
         // check if tne user entered all fields
         if(!email || !password){
             return res.status(400).json({
-                error:"All fields must be field"
+                error:"All fields must be filled"
             })
         }
 

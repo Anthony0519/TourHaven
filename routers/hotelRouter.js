@@ -1,6 +1,6 @@
 const router = require("express").Router()
 
-const { createhotel, verifyhotel, resendVerification, forgetPassword, signIn, logOut, resetPassword, changeProfieImage, locationSearch, hotelSearch, updateHotel, deleteHotel } = require("../controllers/hotelController")
+const { createhotel, verifyhotel, resendVerification, forgetPassword, signIn, logOut, resetPassword, changeProfieImage, locationSearch, hotelSearch, updateHotel, deleteHotel, getAllHotels } = require("../controllers/hotelController")
 const hotelAuth = require("../middlewares/hotelAuth")
 
 const { resetPasswordValidation, updateValidation, forgotValidation, hotelValidation} = require("../middlewares/validation")
@@ -21,9 +21,11 @@ router.route("/hotel-reset_password/:token").post(resetPasswordValidation,resetP
 
 router.route("/hotel-change-profileimage").put(hotelAuth,changeProfieImage)
 
-router.route("/search-location").get(hotelAuth,locationSearch)
+router.route("/search-location").get(locationSearch)
 
-router.route("/search-hotel").get(hotelAuth,hotelSearch)
+router.route("/search-hotel").get(hotelSearch)
+
+router.route("/get-all-hotels").get(getAllHotels)
 
 router.route("/updatehotels").put(hotelAuth,updateValidation,updateHotel)
 
