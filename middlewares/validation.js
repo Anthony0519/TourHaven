@@ -28,7 +28,7 @@ const signUpValidation = (req, res, next) => {
     }),
   });
 
-  const {firstName,lastName,email,phoneNumber,password} = req.body
+  const { firstName, lastName, email, phoneNumber, password } = req.body;
 
   const { error } = validateSignup.validate({firstName,lastName,email,phoneNumber,password}, { abortEarly: false });
 
@@ -94,7 +94,7 @@ const resetPasswordValidation = (req, res, next) => {
     }),
   });
 
-  const {password} = req.body
+  const { password } = req.body;
 
   const { error } = validatePassword.validate({password});
 
@@ -123,7 +123,7 @@ const updateValidation = (req, res, next) => {
   }),    
   });
 
-  const {firstName,lastName,phoneNumber} = req.body
+  const { firstName, lastName, phoneNumber } = req.body;
 
   const { error } = validateUpdate.validate({firstName,lastName,phoneNumber});
 
@@ -138,13 +138,19 @@ const updateValidation = (req, res, next) => {
 
 const forgotValidation = (req, res, next) => {
   const validateforgot = hapiJoiValidator.object({
-    email: hapiJoiValidator.string().email({ tlds: { allow: false } }).trim().min(5).required().messages({
-      'string.empty': 'email cannot be empty',
-      'string.email': 'Invalid email format',
-    }),
+    email: hapiJoiValidator
+      .string()
+      .email({ tlds: { allow: false } })
+      .trim()
+      .min(5)
+      .required()
+      .messages({
+        "string.empty": "email cannot be empty",
+        "string.email": "Invalid email format",
+      }),
   });
 
-  const {email} = req.body
+  const { email } = req.body;
 
   const { error } = validateforgot.validate({email});
 
