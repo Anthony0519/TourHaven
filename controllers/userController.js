@@ -138,7 +138,7 @@ exports.signIn = async (req,res)=>{
         const user = await userModel.findOne({email:email.toLowerCase()})
         if(!user){
             return res.status(400).json({
-                message: "wrong email"
+                error: "wrong email"
             })
         }
 
@@ -146,14 +146,14 @@ exports.signIn = async (req,res)=>{
         const checkPassword = bcrypt.compareSync(password,user.password)
         if (!checkPassword) {
             return res.status(400).json({
-                message: "wrong password"
+                error: "wrong password"
             })
         }
 
         // check for verification
         if(user.isVerified  === false){
             return res.status(400).json({
-                message: "kindly verify your email so you can login"
+                error: "kindly verify your email so you can login"
             })
         }
 
@@ -283,7 +283,7 @@ exports.resetPassword = async (req,res)=>{
 
         // return success message
         res.status(200).json({
-            message: "password reset successfully"
+            message: "password reset successfull"
         })
         
     } catch (err) {

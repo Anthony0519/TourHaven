@@ -224,7 +224,7 @@ exports.signIn = async (req,res)=>{
         const hotel = await hotelModel.findOne({email:email.toLowerCase()})
         if(!hotel){
             return res.status(400).json({
-                message: "wrong email"
+                error: "wrong email"
             })
         }
 
@@ -232,16 +232,16 @@ exports.signIn = async (req,res)=>{
         const checkPassword = bcrypt.compareSync(password,hotel.password)
         if (!checkPassword) {
             return res.status(400).json({
-                message: "wrong password"
+                error: "wrong password"
             })
         }
 
         // check for verification
-        // if(hotel.isVerified  === false){
-        //     return res.status(400).json({
-        //         message: "kindly verify your email so you can login"
-        //     })
-        // }
+        if(hotel.isVerified  === false){
+            return res.status(400).json({
+                error: "kindly verify your email so you can login"
+            })
+        }
 
         // generate a token for the hotel if all detail are correct
         const token = jwt.sign({

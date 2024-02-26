@@ -7,14 +7,14 @@ const hotelAuth = async (req, res, next) => {
         const auth = req.headers.authorization;
         if (!auth) {
             return res.status(404).json({
-                message: 'oops! user logged out. Please login to continue'
+                error: 'oops! user logged out. Please login to continue'
             });
         }
         // split the token
         const token = auth.split(' ')[1];
         if (!token) {
             return res.status(404).json({
-                message: 'oops! user logged out. Please login to continue'
+                error: 'oops! user logged out. Please login to continue'
             });
         }
 
@@ -25,14 +25,14 @@ const hotelAuth = async (req, res, next) => {
         const user = await hotelModel.findById(decodeToken.hotelId);
         if (!user) {
             return res.status(404).json({
-                message: 'oops! user logged out. Please login to continue'
+                error: 'oops! user logged out. Please login to continue'
             });
         }
 
         // check if the user is loged out
         if(user.hotelBlacklist.includes(token)){
             return res.status(403).json({
-                message: 'oops! user logged out. Please login to continue'
+                error: 'oops! user logged out. Please login to continue'
             })
         }
 
@@ -42,12 +42,12 @@ const hotelAuth = async (req, res, next) => {
     } catch (err) {
         if (err instanceof jwt.JsonWebTokenError) {
             return res.status(401).json({
-                message: 'Session Timeout'
+                error: 'Session Timeout'
             });
         }
 
         res.status(500).json({
-            message: err.message
+            error: err.message
         });
     }
 };
