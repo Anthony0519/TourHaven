@@ -168,7 +168,11 @@ exports.signIn = async (req,res)=>{
         // throw a success respomse
         res.status(200).json({
             message:"Login successful",
-            data:token
+            data:{
+                firstName:user.firstName,
+                lastName:user.lastName
+            },
+            token:token
         })
 
     }catch(err){
@@ -315,8 +319,8 @@ exports.forgetPassword = async (req,res)=>{
 
         // if user found generate a new token for the user
         const token = jwt.sign({userId:user._id},process.env.jwtKey,{expiresIn:"10mins"})
-
-        const link = `https://tour-haven-appli.vercel.app/resetpass`
+       
+        const link = `https://tour-haven-appli.vercel.app/resetpass/${token}`
         const html =  resetPasswordMail(link, user.firstName)
 
         sendMail({
