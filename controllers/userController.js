@@ -110,9 +110,10 @@ exports.verifyUser = async (req,res)=>{
         // find by id and verify
          await userModel.findByIdAndUpdate(ID,{isVerified:true}, {new:true})
     
-        res.status(200).json({
-            message: "you have been verified",
-        })
+        // res.status(200).json({
+        //     message: "you have been verified",
+        // })
+        res.redirect("https://tour-haven-appli.vercel.app/verify")
 
     }catch(err){
         res.status(500).json({
@@ -315,7 +316,7 @@ exports.forgetPassword = async (req,res)=>{
         // if user found generate a new token for the user
         const token = jwt.sign({userId:user._id},process.env.jwtKey,{expiresIn:"10mins"})
 
-        const link = `${req.protocol}://${req.get("host")}/reset_password/${token}`
+        const link = `https://tour-haven-appli.vercel.app/resetpass`
         const html =  resetPasswordMail(link, user.firstName)
 
         sendMail({
