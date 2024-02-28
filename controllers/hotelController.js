@@ -471,24 +471,49 @@ exports.getAllHotels = async(req,res)=>{
     }
 }
 
-// location search
-exports.locationSearch = async(req,res)=>{
+// // location search
+// exports.locationSearch = async(req,res)=>{
+//     try {
+
+//         // get the user's location
+//        const {location} = req.body
+
+//     //    find the location
+//     const loc = await hotelModel.find().where("city").equals(`${location}`).populate("hotelRooms")
+//     if(!loc){
+//         return res.status(404).json({
+//             error:"No hotels registered from this location"
+//         })
+//     }
+
+//     res.status(200).json({
+//         data:loc
+//     })
+        
+//     } catch (err) {
+//         res.status(500).json({
+//             error:err.message
+//         })
+//     }
+// }
+
+// location search or hotel search
+exports.Search = async(req,res)=>{
     try {
 
-        // get the user's location
-       const {location} = req.body
+        // get the user's search
+        const {search} = req.body
+        if(!search){
+            return res.status(400).json({
+                error:"can't search an empty field"
+            })
+        }
 
-    //    find the location
-    const loc = await hotelModel.find().where("city").equals(`${location}`).populate("hotelRooms")
-    if(!loc){
-        return res.status(404).json({
-            error:"No hotels registered from this location"
-        })
-    }
-
-    res.status(200).json({
-        data:loc
-    })
+        // check if the search is a hotel
+        const hotel = await hotelModel.findOne({hotelName:search})
+        if (hotel) {
+               
+        }
         
     } catch (err) {
         res.status(500).json({
@@ -496,6 +521,7 @@ exports.locationSearch = async(req,res)=>{
         })
     }
 }
+
 exports.hotelSearch = async(req,res)=>{
     try {
 

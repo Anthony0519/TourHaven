@@ -15,7 +15,7 @@ router.route("/verification").post(resendVerification)
 
 router.route("/forgetPassword").post(forgotValidation,forgetPassword)
 
-router.route("/reset_password/:token").put(resetPasswordValidation,resetPassword)/
+router.route("/reset_password/:token").put(resetPasswordValidation,resetPassword)
 
 router.route("/updateusers").put(authorization,updateValidation,updateUser)
 

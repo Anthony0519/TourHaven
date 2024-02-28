@@ -7,14 +7,14 @@ const authorization = async (req, res, next) => {
         const auth = req.headers.authorization;
         if (!auth) {
             return res.status(404).json({
-                error: 'oops! user logged out. Please login to continue'
+                error: 'Authorization not found'
             });
         }
         // split the token
         const token = auth.split(' ')[1];
         if (!token) {
             return res.status(404).json({
-                error: 'oops! user logged out. Please login to continue'
+                error: 'Authorization failed: token not found'
             });
         }
 
@@ -25,7 +25,7 @@ const authorization = async (req, res, next) => {
         const user = await userModel.findById(decodeToken.userId);
         if (!user) {
             return res.status(404).json({
-                error: 'oops! user logged out. Please login to continue'
+                error: 'user not found'
             });
         }
 

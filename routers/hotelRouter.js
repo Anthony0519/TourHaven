@@ -21,7 +21,7 @@ router.route("/hotel-reset_password/:token").post(resetPasswordValidation,resetP
 
 router.route("/hotel-change-profileimage").put(hotelAuth,changeProfieImage)
 
-router.route("/search-location").get(locationSearch)
+// router.route("/search-location").get(locationSearch)
 
 router.route("/search-hotel").get(hotelSearch)
 

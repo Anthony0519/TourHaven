@@ -447,7 +447,6 @@ exports.logOut = async (req, res) => {
         // return sucess message
         res.status(200).json({
             message: 'User logged out successfully',
-            user
         });
     } catch (err) {
         res.status(500).json({
