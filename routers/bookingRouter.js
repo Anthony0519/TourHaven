@@ -12,8 +12,5 @@ router.delete(
   userAuth,
   bookingController.deleteBooking
 );
-router.post(
-  "/trigger-background-task",
-  bookingController.triggerBackgroundTask
-);
+
 module.exports = router;

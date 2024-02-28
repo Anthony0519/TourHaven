@@ -23,11 +23,11 @@ const bookingSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    status: {
-      type: String,
-      enum: ["booked", "occupied", "vacant"],
-      default: "booked",
-    },
+    // status: {
+    //   type: String,
+    //   enum: ["booked", "occupied", "vacant"],
+    //   default: "booked",
+    // },
   },
   { timestamps: true }
 );
