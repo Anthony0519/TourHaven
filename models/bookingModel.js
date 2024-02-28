@@ -1,47 +1,37 @@
 const mongoose = require("mongoose");
 
-const bookingSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "UserModel",
-    required: true,
-  },
-  paymentDetails: {
-    // Add payment details fields as needed
-  },
-  status: {
-    type: String,
-    default: "Pending", // Initial status, customize as needed
-  },
-  checkInDetails: {
-    isCheckedIn: {
-      type: Boolean,
-      default: false,
+const bookingSchema = new mongoose.Schema(
+  {
+    room: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "room",
+      required: true,
     },
-    checkInTime: Date,
-    // Other check-in related fields
-  },
-  checkOutDetails: {
-    isCheckedOut: {
-      type: Boolean,
-      default: false,
+    guestName: {
+      type: String,
+      required: true,
     },
-    checkOutTime: Date,
-    // Other check-out related fields
+    checkInDate: {
+      type: Date,
+      required: true,
+    },
+    checkOutDate: {
+      type: Date,
+      required: true,
+    },
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["booked", "occupied", "vacant"],
+      default: "booked",
+    },
   },
-  // Other booking-related fields
+  { timestamps: true }
+);
 
-  // Timestamps for tracking creation and modification times
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+const bookingModel = mongoose.model("booking", bookingSchema);
 
-const Booking = mongoose.model("Booking", bookingSchema);
-
-module.exports = Booking;
+module.exports = bookingModel;
