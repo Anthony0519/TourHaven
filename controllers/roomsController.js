@@ -9,7 +9,7 @@ exports.uploadRoom = async(req,res)=>{
         const ID = req.user.hotelId
 
         // get the rooms details
-        const {roomType,price} = req.body
+        const {roomType,price,roomNum} = req.body
 
         // find the hotel
         const hotel = await hotelModel.findById(ID)
@@ -26,6 +26,7 @@ exports.uploadRoom = async(req,res)=>{
         const createRoom = roomModel({
             hotel:hotel._id,
             roomType,
+            roomNum,
             price,
             roomImage:image.secure_url
         })

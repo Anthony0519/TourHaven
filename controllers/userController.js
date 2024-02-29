@@ -377,6 +377,43 @@ exports.getOneUser = async(req,res)=>{
     }
 }
 
+exports.changeProfilePics = async(req,res)=>{
+    try {
+
+        // get the id from the token
+        const ID = req.user.userId
+
+        // get the user with the id
+        const user = await userModel.findById(ID)
+        if (!user) {
+            return res.status(404).json({
+                error:"user not found"
+            })
+        }
+
+        // detroy the prvious image/and update the new one
+        if (user.profilePics) {
+            const oldImage = user.profilePics.split("/").pop().split(".")[0]
+            await cloud.uploader.destroy(oldImage)
+
+        }
+
+        // update the new image
+        const file = req.files.profilePics.tempFilePath
+        const newImage = await cloud.uploader.upload(file)
+        await userModel.findByIdAndUpdate(ID,{profileImage:newImage.secure_url},{new:true})
+
+        res.status(200).json({
+            message: "picture updated"
+        })
+
+    } catch (err) {
+        res.status(500).json({
+            error:err.message
+        })
+    }
+}
+
 exports.updateUser = async(req,res)=>{
     try {
 

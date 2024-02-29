@@ -43,9 +43,23 @@ exports.createhotel = async (req,res)=>{
         // upload image
         const file = req.files.profileImage.tempFilePath
 
-        const result = await cloud.uploader.upload(file)
+        const profile = await cloud.uploader.upload(file)
 
         const newFeatures = features.split(",")
+
+        console.log(req.files)
+        console.log(req.file.hotelImages)
+
+        // Array to store the secure URLs of uploaded images
+        const uploadedImages = [];
+
+        // Loop through each file in req.files.hotelImages
+        for (const file of req.files.hotelImages) {
+       // Upload the current image to Cloudinary
+        const rooms = await cloud.uploader.upload(file.tempFilePath);
+        // Push the secure URL of the uploaded image to the array
+        uploadedImages.push(rooms.secure_url);
+        }
 
         // create the hotel
         const hotel = await hotelModel.create({
@@ -57,7 +71,8 @@ exports.createhotel = async (req,res)=>{
             desc,
             stars,
             features:newFeatures,
-            profileImage:result.secure_url,
+            hotelImages:uploadedImages,
+            profileImage:profile.secure_url,
             password:hash
         })
 
@@ -417,7 +432,7 @@ exports.updateHotel = async(req,res)=>{
     }
 }
 
-exports.changeProfieImage = async(req,res)=>{
+exports.changeProfileImage = async(req,res)=>{
     try {
 
         // get the id from the token
@@ -458,15 +473,33 @@ exports.changeProfieImage = async(req,res)=>{
 exports.getAllHotels = async(req,res)=>{
     try{
 
-        const hotels = await hotelModel.find()
-        if(hotels.length === 0){
+        const hotel = await hotelModel.find().populate("hotelRooms")
+        if(hotel.length === 0){
             return res.status(404).json({
                 error:"No registered hotel yet"
             })
         }
 
+        // extract hotel inputs
+        const extractedHotel = hotel.map(hotels => ({
+            name:hotels.hotelName,
+            description:hotels.desc,
+            profileImage:hotels.profileImage,
+            city:hotels.city,
+            address:hotels.address,
+            features:hotels.features,
+            stars:hotels.stars,
+            hotelImages:hotels.hotelImages,
+            availableRooms:hotels.hotelRooms.map(rooms => ({
+                Type:rooms.roomType,
+                image:rooms.roomImage,
+                price:rooms.price,
+                Number:rooms.roomNum
+            }))
+        }))
+
         res.status(200).json({
-            data:hotels
+            data:extractedHotel
         })
 
     } catch (err) {
@@ -476,7 +509,7 @@ exports.getAllHotels = async(req,res)=>{
     }
 }
 
-// location search or hotel search
+// location or hotel search or hotel search
 exports.Search = async(req,res)=>{
     try {
 
@@ -491,7 +524,7 @@ exports.Search = async(req,res)=>{
         const convertedSearch = search.toLowerCase().charAt(0).toUpperCase() + search.slice(1)
 
         // check if the search is a location
-        const loc = await locModel.findOne({loc:convertedSearch}).populate("hotel")
+        const loc = await locModel.findOne({loc:search}).populate({path:"hotel", populate:{path:"hotelRooms"}})
         if (!loc) {
 
             // if not location search in hotel
@@ -515,21 +548,40 @@ exports.Search = async(req,res)=>{
                 availableRooms:hotels.hotelRooms.map(rooms => ({
                     Type:rooms.roomType,
                     image:rooms.roomImage,
-                    price:rooms.price
+                    price:rooms.price,
+                    Number:rooms.roomNum
                 }))
             }))
 
             // retun the hotels
            return res.status(200).json({
                 message:`${hotel.length} hotel found for ${search}`,
-                extractedHotel
+                data:extractedHotel
             })
 
         }
 
+        // extract details from the locstion returned
+        const extractedData = loc.hotel.map(hotel => ({
+            name: hotel.hotelName,
+            description: hotel.desc,
+            profileImage: hotel.profileImage,
+            city: hotel.city,
+            address: hotel.address,
+            features: hotel.features,
+            stars: hotel.stars,
+            hotelImages: hotel.hotelImages,
+            availableRooms: hotel.hotelRooms.map(room => ({
+                Type: room.roomType,
+                image: room.roomImage,
+                price: room.price,
+                Number: room.roomNum
+            }))
+        }));
+
         res.status(200).json({
             message:`${loc.hotel.length} Hotels in ${search},Lagos`,
-            data:loc
+            data:extractedData
         })
         
     } catch (err) {
@@ -545,23 +597,39 @@ exports.hotelSearch = async(req,res)=>{
         // get the user's location
        const {hotel} = req.body
 
+       const convertedSearch = hotel.toLowerCase().charAt(0).toUpperCase() + hotel.slice(1)
+
     //    find the location
-    const loc = await hotelModel.findOne({hotelName:hotel}).populate("hotelRooms")
+    const loc = await hotelModel.find().where("hotelName").equals(`${convertedSearch}`).populate("hotelRooms")
     if(!loc){
         return res.status(404).json({
             error:"hotel not found"
         })
     }
 
-    res.status(200).json({
-        data:{
-            hotelName:loc.hotelName,
-            tel:loc.phoneNumber,
-            city:loc.city, 
-            address:loc.address,
-            rooms:loc.hotelRooms
-        }
-    })
+               // extract hotel inputs
+               const extractedHotel = loc.map(hotels => ({
+                name:hotels.hotelName,
+                description:hotels.desc,
+                profileImage:hotels.profileImage,
+                city:hotels.city,
+                address:hotels.address,
+                features:hotels.features,
+                stars:hotels.stars,
+                hotelImages:hotels.hotelImages,
+                availableRooms:hotels.hotelRooms.map(rooms => ({
+                    Type:rooms.roomType,
+                    image:rooms.roomImage,
+                    price:rooms.price,
+                    Number:rooms.roomNum
+                }))
+            }))
+
+            // retun the hotels
+            res.status(200).json({
+                message:`${loc.length} hotel found for ${hotel}`,
+                data:extractedHotel
+            })
         
     } catch (err) {
         res.status(500).json({
@@ -645,6 +713,6 @@ exports.logOut = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             message: err.message,
-        });
+        })
     }
-};
+}

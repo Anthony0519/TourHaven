@@ -1,5 +1,5 @@
  const router = require("express").Router()
-const { createUser, signIn, verifyUser, getOneUser, updateUser, forgetPassword, logOut, resendVerification, resetPassword, deleteUser } = require("../controllers/userController")
+const { createUser, signIn, verifyUser, getOneUser, changeProfilePics, updateUser, forgetPassword, logOut, resendVerification, resetPassword, deleteUser } = require("../controllers/userController")
 const authorization = require("../middlewares/authorization")
 const { signUpValidation, resetPasswordValidation, updateValidation, forgotValidation, } = require("../middlewares/validation")
 
@@ -18,6 +18,8 @@ router.route("/verification").post(resendVerification)
 router.route("/forgetPassword").post(forgotValidation,forgetPassword)
 
 router.route("/reset_password/:token").put(resetPasswordValidation,resetPassword)
+
+router.route("/change-profile-picture").put(authorization,changeProfilePics)
 
 router.route("/updateusers").put(authorization,updateValidation,updateUser)
 
