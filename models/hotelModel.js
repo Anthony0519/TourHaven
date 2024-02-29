@@ -17,6 +17,9 @@ const hotelSchema = new mongoose.Schema({
     profileImage:{
         type:String,
     },
+    hotelImages:[{
+        type:String,
+    }],
     hotelRooms:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"room"
@@ -28,6 +31,15 @@ const hotelSchema = new mongoose.Schema({
     address:{
         type:String,
         required:true
+    },
+    desc:{
+        type:String,
+    },
+    stars:{
+        type:Number,
+    },
+    features:{
+        type:Array,
     },
     password:{
         type:String,

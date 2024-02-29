@@ -13,7 +13,7 @@ exports.createhotel = async (req,res)=>{
     try{
 
         // get the hotel's input
-        const {hotelName,email,phoneNumber,city,address,password,confirmPassword} = req.body
+        const {hotelName,email,phoneNumber,city,address,password,confirmPassword,desc,stars,features} = req.body
 
         // check if tne hotel entered all fields
         if(!hotelName || !email || !phoneNumber || !city || !address || !password || !confirmPassword){
@@ -45,13 +45,18 @@ exports.createhotel = async (req,res)=>{
 
         const result = await cloud.uploader.upload(file)
 
+        const newFeatures = features.split(",")
+
         // create the hotel
         const hotel = await hotelModel.create({
             hotelName:hotelName.toLowerCase().charAt(0).toUpperCase() + hotelName.slice(1),
             email:email.toLowerCase(),
             phoneNumber,
             address,
-            city,
+            city:city.toLowerCase().charAt(0).toUpperCase() + city .slice(1),
+            desc,
+            stars,
+            features:newFeatures,
             profileImage:result.secure_url,
             password:hash
         })
@@ -237,11 +242,11 @@ exports.signIn = async (req,res)=>{
         }
 
         // check for verification
-        if(hotel.isVerified  === false){
-            return res.status(400).json({
-                error: "kindly verify your email so you can login"
-            })
-        }
+        // if(hotel.isVerified  === false){
+        //     return res.status(400).json({
+        //         error: "kindly verify your email so you can login"
+        //     })
+        // }
 
         // generate a token for the hotel if all detail are correct
         const token = jwt.sign({
@@ -471,32 +476,6 @@ exports.getAllHotels = async(req,res)=>{
     }
 }
 
-// // location search
-// exports.locationSearch = async(req,res)=>{
-//     try {
-
-//         // get the user's location
-//        const {location} = req.body
-
-//     //    find the location
-//     const loc = await hotelModel.find().where("city").equals(`${location}`).populate("hotelRooms")
-//     if(!loc){
-//         return res.status(404).json({
-//             error:"No hotels registered from this location"
-//         })
-//     }
-
-//     res.status(200).json({
-//         data:loc
-//     })
-        
-//     } catch (err) {
-//         res.status(500).json({
-//             error:err.message
-//         })
-//     }
-// }
-
 // location search or hotel search
 exports.Search = async(req,res)=>{
     try {
@@ -509,11 +488,49 @@ exports.Search = async(req,res)=>{
             })
         }
 
-        // check if the search is a hotel
-        const hotel = await hotelModel.findOne({hotelName:search})
-        if (hotel) {
-               
+        const convertedSearch = search.toLowerCase().charAt(0).toUpperCase() + search.slice(1)
+
+        // check if the search is a location
+        const loc = await locModel.findOne({loc:convertedSearch}).populate("hotel")
+        if (!loc) {
+
+            // if not location search in hotel
+            const hotel = await hotelModel.find().where("hotelName").equals(`${convertedSearch}`).populate("hotelRooms")
+            if(hotel.length === 0){
+                return res.status(404).json({
+                    error:`No result found for ${search}`
+                })
+            }
+
+            // extract hotel inputs
+            const extractedHotel = hotel.map(hotels => ({
+                name:hotels.hotelName,
+                description:hotels.desc,
+                profileImage:hotels.profileImage,
+                city:hotels.city,
+                address:hotels.address,
+                features:hotels.features,
+                stars:hotels.stars,
+                hotelImages:hotels.hotelImages,
+                availableRooms:hotels.hotelRooms.map(rooms => ({
+                    Type:rooms.roomType,
+                    image:rooms.roomImage,
+                    price:rooms.price
+                }))
+            }))
+
+            // retun the hotels
+           return res.status(200).json({
+                message:`${hotel.length} hotel found for ${search}`,
+                extractedHotel
+            })
+
         }
+
+        res.status(200).json({
+            message:`${loc.hotel.length} Hotels in ${search},Lagos`,
+            data:loc
+        })
         
     } catch (err) {
         res.status(500).json({

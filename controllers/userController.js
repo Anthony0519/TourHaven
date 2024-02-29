@@ -116,6 +116,11 @@ exports.verifyUser = async (req,res)=>{
         res.redirect("https://tour-haven-appli.vercel.app/verify")
 
     }catch(err){
+        if (err instanceof jwt.JsonWebTokenError) {
+            return res.status(400).json({
+                error:"link expired"
+            })
+        }
         res.status(500).json({
             error:err.message
         })
@@ -232,11 +237,6 @@ exports.resendVerification = async (req,res)=>{
 
 
     }catch(err){
-        if (err instanceof jwt.JsonWebTokenError) {
-            return res.status(400).json({
-                error:"link expired"
-            })
-        }
         res.status(500).json({
             error:err.message
         })
@@ -346,6 +346,37 @@ exports.forgetPassword = async (req,res)=>{
     }
 }
 
+exports.getOneUser = async(req,res)=>{
+    try {
+
+        // get the users id
+        const ID = req.user.userId
+
+        // find the user
+        const user = await userModel.findById(ID)
+        if(!user){
+            return res.status(404).json({
+                error:"user not found"
+            })
+        }
+
+        // return the user's details when found
+        res.status(200).json({
+            message:"here are the user's details",
+            details:{
+                name:`${user.firstName} ${user.lastName}`,
+                email:user.email,
+                phoneNumber:user.phoneNumber
+            }
+        })
+        
+    } catch (err) {
+        res.status(500).json({
+            error:err.message
+        })
+    }
+}
+
 exports.updateUser = async(req,res)=>{
     try {
 
@@ -353,7 +384,7 @@ exports.updateUser = async(req,res)=>{
         const ID = req.user.userId
 
         // get the user's input
-        const {firstName,lastName,phoneNumber} = req.body
+        const {firstName,lastName,phoneNumber,email} = req.body
 
         // find tyhe user with the id
         const user = await userModel.findById(ID)
@@ -367,7 +398,7 @@ exports.updateUser = async(req,res)=>{
         const editOnly = {
             firstName,
             lastName,
-            phoneNumber
+            phoneNumber,
         }
 
         // eddit the details
@@ -377,6 +408,34 @@ exports.updateUser = async(req,res)=>{
                 error:"error updating user"
             })
         }
+        
+        // if(email){
+        //     updated.email = email.toLowerCase()
+        //     updated.isVerified = false
+        //     await updated.save()
+
+        //             // generate a token for the user
+        // const token = jwt.sign({
+        //     userId:user._id,
+        //     email:user.email,
+        //     tel:user.phoneNumber
+        // },process.env.jwtKey,{expiresIn:"5mins"})
+
+        // // verify the users email
+        // const link = `${req.protocol}://${req.get("host")}/api/v1/users/verify/${token}`
+        // const html = dynamicMail(link,updated.firstName,updated.lastName.slice(0,1).toUpperCase())
+
+        // sendMail({
+        //     email:user.email,
+        //     subject: "KIND VERIFY YOUR ACCOUNT",
+        //     html:html
+        // })
+
+        // return  res.status(200).json({
+        //     message:"user updatted successfully. Kindly verify your new email address to continue"
+        // })
+
+        // }
 
         // success message
         res.status(200).json({
