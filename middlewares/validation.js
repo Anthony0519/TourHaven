@@ -33,10 +33,14 @@ const signUpValidation = (req, res, next) => {
   const { error } = validateSignup.validate({firstName,lastName,email,phoneNumber,password}, { abortEarly: false });
 
   if (error) {
-    return res.status(400).json({
-      error: error.details.map(detail => detail.message), 
-    });
+    const errors = error.details.map(detail => detail.message);
+    
+    // Send errors one by one
+    for (const errorMessage of errors) {
+    return res.status(400).json({ error: errorMessage });
+    }
   }
+
 
   next();
 };

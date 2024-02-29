@@ -40,26 +40,16 @@ exports.createhotel = async (req,res)=>{
         const saltPass = bcrypt.genSaltSync(12)
         const hash = bcrypt.hashSync(password,saltPass)
 
-        // upload image
-        const file = req.files.profileImage.tempFilePath
-
-        const profile = await cloud.uploader.upload(file)
 
         const newFeatures = features.split(",")
 
-        console.log(req.files)
-        console.log(req.file.hotelImages)
+        // console.log(req.files)
+        // console.log(req.file.hotelImages)
 
-        // Array to store the secure URLs of uploaded images
-        const uploadedImages = [];
+        // upload image
+        const file = req.files.profileImage.tempFilePath
 
-        // Loop through each file in req.files.hotelImages
-        for (const file of req.files.hotelImages) {
-       // Upload the current image to Cloudinary
-        const rooms = await cloud.uploader.upload(file.tempFilePath);
-        // Push the secure URL of the uploaded image to the array
-        uploadedImages.push(rooms.secure_url);
-        }
+        const profiles = await cloud.uploader.upload(file)
 
         // create the hotel
         const hotel = await hotelModel.create({
@@ -71,8 +61,7 @@ exports.createhotel = async (req,res)=>{
             desc,
             stars,
             features:newFeatures,
-            hotelImages:uploadedImages,
-            profileImage:profile.secure_url,
+            profileImage:profiles.secure_url,
             password:hash
         })
 
@@ -111,6 +100,48 @@ exports.createhotel = async (req,res)=>{
             message:"Account created successfully... Kindly check your email for verification",
             hotel
         })
+
+    }catch(err){
+        res.status(500).json({
+            error:err.message
+        })
+    }
+}
+
+exports.AddRoomImages = async(req,res)=>{
+    try{
+
+        const ID = req.user.userID
+
+        const hotel = await hotelModel.findById(ID)
+        if(!hotel) {
+            return res.status(404).json({
+                error:"hotel not found"
+            })
+        }
+
+              // Array to store the secure URLs of uploaded images
+              const uploadedImages = [];
+
+              // console.log(req.files.hotelImages )
+              if (req.files && req.files.hotelImages) {
+                  console.log(req.files.hotelImages)
+                  // Loop through each file in req.files.hotelImages
+              for (const image of req.files.hotelImages) {
+                  // Upload the current image to Cloudinary
+                   const rooms = await cloud.uploader.upload(image.tempFilePath);
+                   // Push the secure URL of the uploaded image to the array
+                   uploadedImages.push(rooms.secure_url);
+                   }
+              }
+
+              hotel.hotelImages = uploadedImages
+              await hotel.save()
+
+              res.status(200).json({
+                message:"file uploaded",
+                data:hotel
+              })
 
     }catch(err){
         res.status(500).json({
@@ -514,7 +545,7 @@ exports.Search = async(req,res)=>{
     try {
 
         // get the user's search
-        const {search} = req.body
+        const {search} = req.params
         if(!search){
             return res.status(400).json({
                 error:"can't search an empty field"
@@ -595,7 +626,7 @@ exports.hotelSearch = async(req,res)=>{
     try {
 
         // get the user's location
-       const {hotel} = req.body
+       const {hotel} = req.params
 
        const convertedSearch = hotel.toLowerCase().charAt(0).toUpperCase() + hotel.slice(1)
 

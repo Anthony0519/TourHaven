@@ -1,11 +1,16 @@
 const Booking = require("../models/bookingModel");
-const User = require("../models/userModel");
 
-// Create a new booking
-exports.createBooking = async (req, res) => {
+const bookRoom = async (req, res) => {
   try {
-    const { userId, date } = req.body;
-    const newBooking = await Booking.create({ userId, date });
+    const { room, guestName, checkInDate, checkOutDate, totalAmount } =
+      req.body;
+    const newBooking = await Booking.create({
+      room,
+      guestName,
+      checkInDate,
+      checkOutDate,
+      totalAmount,
+    });
     res.status(201).json(newBooking);
   } catch (error) {
     console.error(error);
@@ -13,8 +18,43 @@ exports.createBooking = async (req, res) => {
   }
 };
 
-// Get all bookings
-exports.getAllBookings = async (req, res) => {
+// const notifyRoomsAsVacant = async () => {
+//   try {
+//     const twentyFourHoursAgo = new Date();
+//     twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+
+//     const overdueBookings = await Booking.find({
+//       checkInDate: { $lt: twentyFourHoursAgo },
+//       status: "occupied",
+//     });
+
+//     for (const booking of overdueBookings) {
+//       booking.status = "vacant";
+//       await booking.save();
+//     }
+
+//     console.log("Rooms notified as vacant for overdue bookings");
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
+
+// const runBackgroundTask = () => {
+//   // Schedule the task to run every 24 hours
+//   setInterval(notifyRoomsAsVacant, 24 * 60 * 60 * 1000);
+// };
+
+// const triggerBackgroundTask = async (req, res) => {
+//   try {
+//     await notifyRoomsAsVacant();
+//     res.status(200).json({ message: "Background task triggered successfully" });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
+
+const getBookings = async (req, res) => {
   try {
     const bookings = await Booking.find();
     res.status(200).json(bookings);
@@ -24,10 +64,10 @@ exports.getAllBookings = async (req, res) => {
   }
 };
 
-// Get a specific booking by ID
-exports.getBookingById = async (req, res) => {
+const getBookingById = async (req, res) => {
+  const { bookingId } = req.params;
   try {
-    const booking = await Booking.findById(req.params.bookingId);
+    const booking = await Booking.findById(bookingId);
     if (!booking) {
       return res.status(404).json({ error: "Booking not found" });
     }
@@ -38,15 +78,13 @@ exports.getBookingById = async (req, res) => {
   }
 };
 
-// Update a booking by ID
-exports.updateBookingById = async (req, res) => {
+const updateBooking = async (req, res) => {
+  const { bookingId } = req.params;
   try {
     const updatedBooking = await Booking.findByIdAndUpdate(
-      req.params.bookingId,
+      bookingId,
       req.body,
-      {
-        new: true,
-      }
+      { new: true }
     );
     if (!updatedBooking) {
       return res.status(404).json({ error: "Booking not found" });
@@ -58,78 +96,26 @@ exports.updateBookingById = async (req, res) => {
   }
 };
 
-// Delete a booking by ID
-exports.deleteBookingById = async (req, res) => {
+const deleteBooking = async (req, res) => {
+  const { bookingId } = req.params;
   try {
-    const deletedBooking = await Booking.findByIdAndDelete(
-      req.params.bookingId
-    );
+    const deletedBooking = await Booking.findByIdAndDelete(bookingId);
     if (!deletedBooking) {
       return res.status(404).json({ error: "Booking not found" });
     }
-    res.status(200).json(deletedBooking);
+    res.status(200).json({ message: "Booking deleted successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-// Check-in a user based on booking ID
-exports.checkIn = async (req, res) => {
-  try {
-      const { bookingId } = req.params;
-
-      // Check if the booking exists
-      const booking = await Booking.findById(bookingId);
-      if (!booking) {
-          return res.status(404).json({ error: 'Booking not found' });
-      }
-
-      // Check if the booking is already checked in
-      if (booking.checkInDetails.isCheckedIn) {
-          return res.status(400).json({ error: 'Booking is already checked in' });
-      }
-
-      // Update the check-in details
-      booking.checkInDetails.isCheckedIn = true;
-      booking.checkInDetails.checkInTime = new Date();
-
-      // Save the updated booking
-      await booking.save();
-
-      res.status(200).json({ message: 'Check-in successful', booking });
-  } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
-
-// Check-out a user based on booking ID
-exports.checkOut = async (req, res) => {
-  try {
-      const { bookingId } = req.params;
-
-      // Check if the booking exists
-      const booking = await Booking.findById(bookingId);
-      if (!booking) {
-          return res.status(404).json({ error: 'Booking not found' });
-      }
-
-      // Check if the booking is already checked out
-      if (booking.checkOutDetails.isCheckedOut) {
-          return res.status(400).json({ error: 'Booking is already checked out' });
-      }
-
-      // Update the check-out details
-      booking.checkOutDetails.isCheckedOut = true;
-      booking.checkOutDetails.checkOutTime = new Date();
-
-      // Save the updated booking
-      await booking.save();
-
-      res.status(200).json({ message: 'Check-out successful', booking });
-  } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Internal Server Error' });
-  }
+module.exports = {
+  bookRoom,
+  getBookings,
+  getBookingById,
+  updateBooking,
+  deleteBooking,
+  runBackgroundTask,
+  triggerBackgroundTask,
 };
