@@ -51,13 +51,14 @@ exports.createhotel = async (req,res)=>{
 
         const profiles = await cloud.uploader.upload(file)
 
+        const convertedCity = city.toLowerCase().charAt(0).toUpperCase() + city .slice(1)
         // create the hotel
         const hotel = await hotelModel.create({
             hotelName:hotelName.toLowerCase().charAt(0).toUpperCase() + hotelName.slice(1),
             email:email.toLowerCase(),
             phoneNumber,
             address,
-            city:city.toLowerCase().charAt(0).toUpperCase() + city .slice(1),
+            city:convertedCity,
             desc,
             stars,
             features:newFeatures,
@@ -66,11 +67,11 @@ exports.createhotel = async (req,res)=>{
         })
 
         // check if the hotel city exist
-        let location = await locModel.findOne({loc:city})
+        let location = await locModel.findOne({loc:convertedCity})
         if(!location){
             // create a new one if it does not exist
             location = await locModel.create({
-                loc:city
+                loc:convertedCity
             })
         }
 
@@ -554,7 +555,7 @@ exports.Search = async(req,res)=>{
             })
         }
 
-        const convertedSearch = search.toLowerCase().charAt(0).toUpperCase() + search.slice(1)
+        const convertedSearch = search.toLowerCase().charAt(0).toUpperCase() + search.slice().toLowerCase(),
 
         // check if the search is a location
         const loc = await locModel.findOne({loc:search}).populate({path:"hotel", populate:{path:"hotelRooms"}})
