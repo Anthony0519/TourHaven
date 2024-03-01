@@ -635,15 +635,15 @@ exports.hotelSearch = async(req,res)=>{
        const {id} = req.params
 
     //    find the location
-    const loc = await hotelModel.findById(id).populate("hotelRooms")
-    if(!loc){
+    const hotel = await hotelModel.findById(id).populate("hotelRooms")
+    if(!hotel){
         return res.status(404).json({
             error:"hotel not found"
         })
     }
 
                // extract hotel inputs
-               const extractedHotel = loc.map(hotels => ({
+               const extractedHotel = hotel.map(hotels => ({
                 hotelId:hotels._id,
                 name:hotels.hotelName,
                 description:hotels.desc,
@@ -664,7 +664,6 @@ exports.hotelSearch = async(req,res)=>{
 
             // retun the hotels
             res.status(200).json({
-                message:`${loc.length} hotel found for ${hotel}`,
                 data:extractedHotel
             })
         
