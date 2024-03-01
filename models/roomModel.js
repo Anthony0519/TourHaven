@@ -20,6 +20,10 @@ const roomSchema = new mongoose.Schema({
         type:Number,
         required:true
     },
+    isBooked:{
+        type:Boolean,
+        default:false
+      },
 
 },{timestamps:true})
 

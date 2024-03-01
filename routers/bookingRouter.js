@@ -3,8 +3,8 @@ const router = express.Router();
 const bookingController = require("../controllers/bookingController");
 const userAuth = require("../middlewares/authorization");
 
-router.post("/bookings", userAuth, bookingController.bookRoom);
-router.get("/bookings", bookingController.getBookings);
+router.post("/bookings/:roomId", userAuth, bookingController.bookRoom);
+router.get("/get-bookings", bookingController.getBookings);
 router.get("/bookings/:bookingId", bookingController.getBookingById);
 router.put("/bookings/:bookingId", userAuth, bookingController.updateBooking);
 router.delete(

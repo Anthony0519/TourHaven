@@ -1,9 +1,7 @@
 const mongoose = require("mongoose");
 const {DateTime} = require("luxon")
 
-const date = DateTime.now().toLocaleString({weekday:"short",month:"short",day:"2-digit", year:"numeric"})
-
-const time = DateTime.now().toLocaleString({hour:"2-digit",minute:"2-digit",second:"2-digit"})
+const createdOn = DateTime.now().toLocaleString({weekday:"short",month:"short",day:"2-digit", year:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit"})
 
 const bookingSchema = new mongoose.Schema(
   {
@@ -23,12 +21,16 @@ const bookingSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref:"users",
     },
-    checkInDate: {
+    checkIn: {
       type: Date,
       required: true,
     },
-    checkOutDate: {
+    checkOut: {
       type: Date,
+      required: true,
+    },
+    perNight: {
+      type: Number,
       required: true,
     },
     totalAmount: {
@@ -37,17 +39,8 @@ const bookingSchema = new mongoose.Schema(
     },
     bookedDate:{
       type:Date,
-      default:date
+      default:createdOn
     },
-    bookedTime:{
-      type:Date,
-      default:time
-    },
-    isBooked:{
-      type:Boolean,
-      default:false
-    },
-
   },
   { timestamps: true }
 );
