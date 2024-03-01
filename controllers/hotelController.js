@@ -111,7 +111,7 @@ exports.createhotel = async (req,res)=>{
 exports.AddRoomImages = async(req,res)=>{
     try{
 
-        const ID = req.user.userID
+        const ID = req.user.hotelId
 
         const hotel = await hotelModel.findById(ID)
         if(!hotel) {
@@ -125,7 +125,6 @@ exports.AddRoomImages = async(req,res)=>{
 
               // console.log(req.files.hotelImages )
               if (req.files && req.files.hotelImages) {
-                  console.log(req.files.hotelImages)
                   // Loop through each file in req.files.hotelImages
               for (const image of req.files.hotelImages) {
                   // Upload the current image to Cloudinary
@@ -304,7 +303,8 @@ exports.signIn = async (req,res)=>{
         // throw a success respomse
         res.status(200).json({
             message:"Login successful",
-            data:token
+            data:hotel,
+            token:token
         })
 
     }catch(err){
@@ -513,6 +513,7 @@ exports.getAllHotels = async(req,res)=>{
 
         // extract hotel inputs
         const extractedHotel = hotel.map(hotels => ({
+            hotelId:hotels._id,
             name:hotels.hotelName,
             description:hotels.desc,
             profileImage:hotels.profileImage,
@@ -522,6 +523,7 @@ exports.getAllHotels = async(req,res)=>{
             stars:hotels.stars,
             hotelImages:hotels.hotelImages,
             availableRooms:hotels.hotelRooms.map(rooms => ({
+                roomId:rooms._id,
                 Type:rooms.roomType,
                 image:rooms.roomImage,
                 price:rooms.price,
@@ -568,6 +570,7 @@ exports.Search = async(req,res)=>{
 
             // extract hotel inputs
             const extractedHotel = hotel.map(hotels => ({
+                hotelId:hotels._id,
                 name:hotels.hotelName,
                 description:hotels.desc,
                 profileImage:hotels.profileImage,
@@ -577,6 +580,7 @@ exports.Search = async(req,res)=>{
                 stars:hotels.stars,
                 hotelImages:hotels.hotelImages,
                 availableRooms:hotels.hotelRooms.map(rooms => ({
+                    roomId:rooms._id,
                     Type:rooms.roomType,
                     image:rooms.roomImage,
                     price:rooms.price,
@@ -594,6 +598,7 @@ exports.Search = async(req,res)=>{
 
         // extract details from the locstion returned
         const extractedData = loc.hotel.map(hotel => ({
+            hotelId:hotel._id,
             name: hotel.hotelName,
             description: hotel.desc,
             profileImage: hotel.profileImage,
@@ -603,6 +608,7 @@ exports.Search = async(req,res)=>{
             stars: hotel.stars,
             hotelImages: hotel.hotelImages,
             availableRooms: hotel.hotelRooms.map(room => ({
+                roomId:room._id,
                 Type: room.roomType,
                 image: room.roomImage,
                 price: room.price,
@@ -640,6 +646,7 @@ exports.hotelSearch = async(req,res)=>{
 
                // extract hotel inputs
                const extractedHotel = loc.map(hotels => ({
+                hotelId:hotel._id,
                 name:hotels.hotelName,
                 description:hotels.desc,
                 profileImage:hotels.profileImage,
@@ -649,6 +656,7 @@ exports.hotelSearch = async(req,res)=>{
                 stars:hotels.stars,
                 hotelImages:hotels.hotelImages,
                 availableRooms:hotels.hotelRooms.map(rooms => ({
+                    roomId:rooms._id,
                     Type:rooms.roomType,
                     image:rooms.roomImage,
                     price:rooms.price,

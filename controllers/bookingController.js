@@ -1,15 +1,36 @@
 const Booking = require("../models/bookingModel");
+const userModel = require("../models/userModel")
+const roomModel = require("../models/roomModel")
 
 const bookRoom = async (req, res) => {
   try {
-    const { room, guestName, checkInDate, checkOutDate, totalAmount } =
-      req.body;
+    // get the user's id and room id
+    const ID = req.user.userId
+    const {roomId} = req.params
+    const { NoOfGuest, guestName, checkInDate, checkOutDate } = req.body;
+
+    // find the user
+    const user = await userModel.findById(ID)
+    if (!user) {
+      return res.status(404).json({
+          error:"user not found"
+      })
+  }
+// find the room
+  const room = await roomModel.findById(roomId)
+  if (!room) {
+    return res.status(404).json({
+        error:"room not found"
+    })
+}
+
+
+
     const newBooking = await Booking.create({
-      room,
       guestName,
+      NoOfGuest,
       checkInDate,
       checkOutDate,
-      totalAmount,
     });
     res.status(201).json(newBooking);
   } catch (error) {

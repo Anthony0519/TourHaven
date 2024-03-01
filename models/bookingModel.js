@@ -1,47 +1,57 @@
 const mongoose = require("mongoose");
+const {DateTime} = require("luxon")
 
-const bookingSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "UserModel",
-    required: true,
-  },
-  paymentDetails: {
-    // Add payment details fields as needed
-  },
-  status: {
-    type: String,
-    default: "Pending", // Initial status, customize as needed
-  },
-  checkInDetails: {
-    isCheckedIn: {
-      type: Boolean,
-      default: false,
+const date = DateTime.now().toLocaleString({weekday:"short",month:"short",day:"2-digit", year:"numeric"})
+
+const time = DateTime.now().toLocaleString({hour:"2-digit",minute:"2-digit",second:"2-digit"})
+
+const bookingSchema = new mongoose.Schema(
+  {
+    guestName: {
+      type: String,
+      required: true,
     },
-    checkInTime: Date,
-    // Other check-in related fields
-  },
-  checkOutDetails: {
-    isCheckedOut: {
-      type: Boolean,
-      default: false,
+    NoOfGuest: {
+      type: Number,
+      required: true,
     },
-    checkOutTime: Date,
-    // Other check-out related fields
-  },
-  // Other booking-related fields
+    room: {
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"rooms",
+    },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref:"users",
+    },
+    checkInDate: {
+      type: Date,
+      required: true,
+    },
+    checkOutDate: {
+      type: Date,
+      required: true,
+    },
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+    bookedDate:{
+      type:Date,
+      default:date
+    },
+    bookedTime:{
+      type:Date,
+      default:time
+    },
+    isBooked:{
+      type:Boolean,
+      default:false
+    },
 
-  // Timestamps for tracking creation and modification times
-  createdAt: {
-    type: Date,
-    default: Date.now,
   },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  { timestamps: true }
+);
 
-const Booking = mongoose.model("Booking", bookingSchema);
+const bookingModel = mongoose.model("booking", bookingSchema);
 
-module.exports = Booking;
+module.exports = bookingModel;

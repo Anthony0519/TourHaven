@@ -1,14 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const {
-  completeCheckout,
-  getBookingDetails,
-  checkIn,
-} = require("../controllers/bookingController");
+const bookingController = require("../controllers/bookingController");
+const userAuth = require("../middlewares/authorization");
 
-// Checkout routes
-router.post("/checkin/complete", checkIn);
-router.post("/checkout/complete", completeCheckout);
-router.get("/checkout/:bookingId", getBookingDetails);
+router.post("/bookings", userAuth, bookingController.bookRoom);
+router.get("/bookings", bookingController.getBookings);
+router.get("/bookings/:bookingId", bookingController.getBookingById);
+router.put("/bookings/:bookingId", userAuth, bookingController.updateBooking);
+router.delete(
+  "/bookings/:bookingId",
+  userAuth,
+  bookingController.deleteBooking
+);
 
 module.exports = router;
