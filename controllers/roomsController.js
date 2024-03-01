@@ -6,13 +6,13 @@ exports.uploadRoom = async(req,res)=>{
     try{
 
         // get the hotel's id from the auth
-        const ID = req.user.hotelId
+        const {id} = req.params
 
         // get the rooms details
         const {roomType,price,roomNum} = req.body
 
         // find the hotel
-        const hotel = await hotelModel.findById(ID)
+        const hotel = await hotelModel.findById(id)
         if (!hotel) {
             return res.status(400).json({
                 error:"error uploading room"

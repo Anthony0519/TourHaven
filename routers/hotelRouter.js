@@ -7,7 +7,7 @@ const { resetPasswordValidation, updateValidation, forgotValidation, hotelValida
 
 router.route("/hotelsignup").post(hotelValidation,createhotel)
 
-router.route("/add-hotel-rooms").post(hotelAuth,AddRoomImages)
+router.route("/add-hotel-rooms/:id").post(AddRoomImages)
 
 router.route("/verifyhotels/:token").get(verifyhotel)
 

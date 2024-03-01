@@ -112,9 +112,9 @@ exports.createhotel = async (req,res)=>{
 exports.AddRoomImages = async(req,res)=>{
     try{
 
-        const ID = req.user.hotelId
+        const {id} = req.params
 
-        const hotel = await hotelModel.findById(ID)
+        const hotel = await hotelModel.findById(id)
         if(!hotel) {
             return res.status(404).json({
                 error:"hotel not found"
