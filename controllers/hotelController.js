@@ -632,12 +632,10 @@ exports.hotelSearch = async(req,res)=>{
     try {
 
         // get the user's location
-       const {hotel} = req.params
-
-       const convertedSearch = hotel.toLowerCase().charAt(0).toUpperCase() + hotel.slice(1)
+       const {id} = req.params
 
     //    find the location
-    const loc = await hotelModel.find().where("hotelName").equals(`${convertedSearch}`).populate("hotelRooms")
+    const loc = await hotelModel.findById(id).populate("hotelRooms")
     if(!loc){
         return res.status(404).json({
             error:"hotel not found"
@@ -646,7 +644,7 @@ exports.hotelSearch = async(req,res)=>{
 
                // extract hotel inputs
                const extractedHotel = loc.map(hotels => ({
-                hotelId:hotel._id,
+                hotelId:hotels._id,
                 name:hotels.hotelName,
                 description:hotels.desc,
                 profileImage:hotels.profileImage,

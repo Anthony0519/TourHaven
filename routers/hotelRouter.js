@@ -25,7 +25,7 @@ router.route("/hotel-change-profileimage").put(hotelAuth,changeProfileImage)
 
 router.route("/search-location/:search").get(Search)
 
-router.route("/search-hotels/:hotel").get(hotelSearch)
+router.route("/search-hotels/:id").get(hotelSearch)
 
 router.route("/get-all-hotels").get(getAllHotels)
 
