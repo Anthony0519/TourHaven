@@ -555,7 +555,7 @@ exports.Search = async(req,res)=>{
             })
         }
 
-        const convertedSearch = search.toLowerCase().charAt(0).toUpperCase() + search.slice().toLowerCase(),
+        const convertedSearch = search.toLowerCase().charAt(0).toUpperCase() + search.slice()
 
         // check if the search is a location
         const loc = await locModel.findOne({loc:search}).populate({path:"hotel", populate:{path:"hotelRooms"}})
