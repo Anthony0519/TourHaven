@@ -47,7 +47,7 @@ const signUpValidation = (req, res, next) => {
 
 const hotelValidation = (req, res, next) => {
   const validateSignup = hapiJoiValidator.object({
-    hotelName: hapiJoiValidator.string().min(3).max(100).trim().required().messages({
+    hotelName: hapiJoiValidator.string().min(3).max(40).required().messages({
       'string.empty': 'hotelName cannot be empty',
       'string.min': 'Min 3 characters', 
     }),
@@ -59,7 +59,7 @@ const hotelValidation = (req, res, next) => {
       'string.empty': 'email cannot be empty',
       'string.email': 'Invalid email format',
     }),
-    city: hapiJoiValidator.string().min(3).max(40).trim().required().messages({
+    city: hapiJoiValidator.string().min(3).max(100).trim().required().messages({
       'string.empty': 'city cannot be empty',
       'string.min': 'Min 3 characters', 
     }),
