@@ -1,8 +1,10 @@
 const mongoose = require("mongoose");
-const {DateTime} = require("luxon")
+const { DateTime } = require("luxon");
 
-const createdOn = DateTime.now().toLocaleString({weekday:"short",month:"short",day:"2-digit", year:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit"})
+const createdDate = DateTime.toLocaleString({weekday: "short",month: "short",day: "2-digit",year: "numeric"});
+const createdTime = DateTime.toLocaleString({hour:"2-digit",minute:"2-digit",second:"2-digit"});
 
+// Define Mongoose schema
 const bookingSchema = new mongoose.Schema(
   {
     guestName: {
@@ -14,12 +16,12 @@ const bookingSchema = new mongoose.Schema(
       required: true,
     },
     room: {
-      type:mongoose.Schema.Types.ObjectId,
-      ref:"rooms",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "rooms",
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref:"users",
+      ref: "users",
     },
     checkIn: {
       type: Date,
@@ -37,10 +39,14 @@ const bookingSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    bookedDate:{
-      type:Date,
-      default:createdOn
+    bookedDate: {
+      type: String,
+      default: createdDate 
     },
+    bookedTime: {
+      type: String,
+      default: createdTime
+    }
   },
   { timestamps: true }
 );

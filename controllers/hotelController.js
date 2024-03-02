@@ -514,7 +514,7 @@ exports.getAllHotels = async(req,res)=>{
 
         // extract hotel inputs
         const extractedHotel = hotel.map(hotels => ({
-            hotelId:hotels._id,
+            id:hotels._id,
             name:hotels.hotelName,
             description:hotels.desc,
             profileImage:hotels.profileImage,
@@ -524,7 +524,7 @@ exports.getAllHotels = async(req,res)=>{
             stars:hotels.stars,
             hotelImages:hotels.hotelImages,
             availableRooms:hotels.hotelRooms.map(rooms => ({
-                roomId:rooms._id,
+                id:rooms._id,
                 Type:rooms.roomType,
                 image:rooms.roomImage,
                 price:rooms.price,
@@ -573,7 +573,7 @@ exports.Search = async(req,res)=>{
 
             // extract hotel inputs
             const extractedHotel = hotel.map(hotels => ({
-                hotelId:hotels._id,
+                id:hotels._id,
                 name:hotels.hotelName,
                 description:hotels.desc,
                 profileImage:hotels.profileImage,
@@ -583,7 +583,7 @@ exports.Search = async(req,res)=>{
                 stars:hotels.stars,
                 hotelImages:hotels.hotelImages,
                 availableRooms:hotels.hotelRooms.map(rooms => ({
-                    roomId:rooms._id,
+                    id:rooms._id,
                     Type:rooms.roomType,
                     image:rooms.roomImage,
                     price:rooms.price,
@@ -601,7 +601,7 @@ exports.Search = async(req,res)=>{
 
         // extract details from the locstion returned
         const extractedData = loc.hotel.map(hotel => ({
-            hotelId:hotel._id,
+            id:hotel._id,
             name: hotel.hotelName,
             description: hotel.desc,
             profileImage: hotel.profileImage,
@@ -611,7 +611,7 @@ exports.Search = async(req,res)=>{
             stars: hotel.stars,
             hotelImages: hotel.hotelImages,
             availableRooms: hotel.hotelRooms.map(room => ({
-                roomId:room._id,
+                id:room._id,
                 Type: room.roomType,
                 image: room.roomImage,
                 price: room.price,
@@ -647,7 +647,7 @@ exports.hotelSearch = async(req,res)=>{
 
                // extract hotel inputs
                const extractedHotel = hotel.map(hotels => ({
-                hotelId:hotels._id,
+                id:hotels._id,
                 name:hotels.hotelName,
                 description:hotels.desc,
                 profileImage:hotels.profileImage,
@@ -657,7 +657,7 @@ exports.hotelSearch = async(req,res)=>{
                 stars:hotels.stars,
                 hotelImages:hotels.hotelImages,
                 availableRooms:hotels.hotelRooms.map(rooms => ({
-                    roomId:rooms._id,
+                    id:rooms._id,
                     Type:rooms.roomType,
                     image:rooms.roomImage,
                     price:rooms.price,
