@@ -554,16 +554,22 @@ exports.Search = async(req,res)=>{
                 error:"can't search an empty field"
             })
         }
+        console.log(search)
 
-        const convertedSearch = search.toLowerCase().charAt(0).toUpperCase() + search.slice()
+        const convertedSearch = search.toLowerCase().charAt(0).toUpperCase() + search.slice(1)
+        console.log(convertedSearch)
 
         // check if the search is a location
-        const loc = await locModel.findOne({loc:search}).populate({path:"hotel", populate:{path:"hotelRooms"}})
+        const loc = await locModel.findOne({loc:convertedSearch}).populate({path:"hotel", populate:{path:"hotelRooms"}})
+        console.log(loc)
+
         if (!loc) {
 
             // if not location search in hotel
             const hotel = await hotelModel.find().where("hotelName").equals(`${convertedSearch}`).populate("hotelRooms")
-            if(hotel.length === 0){
+            console.log(hotel)
+
+            if(!hotel || hotel.length === 0){
                 return res.status(404).json({
                     error:`No result found for ${search}`
                 })
