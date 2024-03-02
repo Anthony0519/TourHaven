@@ -646,24 +646,24 @@ exports.hotelSearch = async(req,res)=>{
     }
 
                // extract hotel inputs
-               const extractedHotel = hotel.map(hotels => ({
-                id:hotels._id,
-                name:hotels.hotelName,
-                description:hotels.desc,
-                profileImage:hotels.profileImage,
-                city:hotels.city,
-                address:hotels.address,
-                features:hotels.features,
-                stars:hotels.stars,
-                hotelImages:hotels.hotelImages,
-                availableRooms:hotels.hotelRooms.map(rooms => ({
+               const extractedHotel = {
+                id:hotel._id,
+                name:hotel.hotelName,
+                description:hotel.desc,
+                profileImage:hotel.profileImage,
+                city:hotel.city,
+                address:hotel.address,
+                features:hotel.features,
+                stars:hotel.stars,
+                hotelImages:hotel.hotelImages,
+                availableRooms:hotel.hotelRooms.map(rooms => ({
                     id:rooms._id,
                     Type:rooms.roomType,
                     image:rooms.roomImage,
                     price:rooms.price,
                     Number:rooms.roomNum
                 }))
-            }))
+            }
 
             // retun the hotels
             res.status(200).json({

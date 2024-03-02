@@ -1,8 +1,9 @@
-const mongoose = require("mongoose");
-const { DateTime } = require("luxon");
+const mongoose = require("mongoose")
+const { DateTime } = require("luxon")
 
-const createdDate = DateTime.toLocaleString({weekday: "short",month: "short",day: "2-digit",year: "numeric"});
-const createdTime = DateTime.toLocaleString({hour:"2-digit",minute:"2-digit",second:"2-digit"});
+const createdOn = DateTime.now()
+const createdDate = createdOn.toLocaleString({weekday: "short",month: "short",day: "2-digit",year: "numeric"});
+const createdTime = createdOn.toLocaleString({hour:"2-digit",minute:"2-digit",second:"2-digit"});
 
 // Define Mongoose schema
 const bookingSchema = new mongoose.Schema(
