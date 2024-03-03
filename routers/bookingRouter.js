@@ -4,11 +4,12 @@ const bookingController = require("../controllers/bookingController");
 const userAuth = require("../middlewares/authorization");
 
 router.post("/bookings/:roomId", userAuth, bookingController.bookRoom);
-router.get("/get-bookings", bookingController.getBookings);
-router.get("/bookings/:bookingId", bookingController.getBookingById);
-router.put("/bookings/:bookingId", userAuth, bookingController.updateBooking);
+router.get("/all-bookings", bookingController.getBookings);
+router.get("/one-bookings/:bookingId", bookingController.getBookingById);
+router.put("/update-bookings/:bookingId", userAuth, bookingController.updateBooking);
+router.put("/bookings-checkout/:bookingId", userAuth, bookingController.checkOutPayment);
 router.delete(
-  "/bookings/:bookingId",
+  "/delete-bookings/:bookingId",
   userAuth,
   bookingController.deleteBooking
 );

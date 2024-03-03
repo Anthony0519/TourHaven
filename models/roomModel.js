@@ -17,13 +17,13 @@ const roomSchema = new mongoose.Schema({
         required:true,
     },
     price:{
-        type:Number,
+        type:String,
         required:true
     },
-    isBooked:{
-        type:Boolean,
-        default:false
-      },
+    // isBooked:{
+    //     type:Boolean,
+    //     default:false
+    //   },
 
 },{timestamps:true})
 

@@ -8,7 +8,7 @@ const bookRoom = async (req, res) => {
     // get the user's id and room id
     const ID = req.user.userId
     const {roomId} = req.params
-    const { NoOfGuest, guestName, checkIn, checkOut } = req.body;
+    const { NoOfGuest, guestName, checkIn, checkOut, checkInTime, checkOutTime } = req.body;
 
     // find the user
     const user = await userModel.findById(ID)
@@ -25,46 +25,83 @@ const bookRoom = async (req, res) => {
     })
 }
 // checks if the room is vacant
-if(room.isBooked === true) {
-  return res.status(400).json({
-    error:"This room has already been booked!"
-  })
-}
+// if(room.isBooked === true) {
+//   return res.status(400).json({
+//     error:"This room has already been booked!"
+//   })
+// }
 
- // Parse the date and time to luxon
- const checkInDate = DateTime.fromFormat(checkIn, 'yyyy-MM-dd', { zone: 'Africa/Lagos' })
- const checkOutDate = DateTime.fromFormat(checkOut, 'yyyy-MM-dd', { zone: 'Africa/Lagos' })
+    // Parse the date and time to Luxon
+    const checkInDateTime = DateTime.fromFormat(checkIn + ' ' + checkInTime, 'yyyy-MM-dd HH:mm', { zone: 'Africa/Lagos' });
+    const checkOutDateTime = DateTime.fromFormat(checkOut + ' ' + checkOutTime, 'yyyy-MM-dd HH:mm', { zone: 'Africa/Lagos' })
+
+    // Get the current date and time in Lagos timezone
+    const currentDateTime = DateTime.now().setZone('Africa/Lagos').startOf('day')
 
  // Check if the dates are valid
- if (!checkInDate.isValid || !checkOutDate.isValid) {
+ if (!checkInDateTime.isValid || !checkOutDateTime.isValid ) {
      return res.status(400).json({
-         message: 'Invalid check-in or check-out date format',
+         error: 'Invalid check-in or check-out date format',
      });
  }
 
-  // Get the current date in Lagos timezone
-  const currentDate = DateTime.now().setZone('Africa/Lagos').startOf('day');
-
+  
   // Check if the dates are valid
-  if (checkInDate >= checkOutDate) {
+  if (checkInDateTime >= checkOutDateTime) {
        return res.status(400).json({
-       message: 'Invalid date range. Check-out date should be after or equal to check-in date',
+       error: 'Invalid date range. Check-out date should be after or equal to check-in date',
       });
   }
   
-  if (checkInDate < currentDate) {
+  if (checkInDateTime < currentDateTime) {
        return res.status(400).json({
-       message: 'Invalid date range. Check-in date should not be in the past!',
+       error: 'Invalid date range. Check-in date should not be in the past!',
       });
   }
+
+  // function to check if the new booking overLaps an already existing booking
+  const checkOverLap = async (roomId, checkInDateTime, checkOutDateTime) => {
+    try {
+
+      // find the room from the booking
+       const existingBooking = await Booking.find({
+        room:roomId,
+        $or:[{
+          $and:[
+            { checkIn:{$lt:checkOutDateTime.toISO()}},
+            {checkOut:{$gt:checkInDateTime.toISO()}},
+            {paymentStatus:{$eq:"paid"}}
+          ]
+        }]
+
+      })
+
+      
+      return existingBooking.length > 0
+      
+    } catch (error) {
+      res.status(500).json({
+        error:`error checking for overlap booking: ${error.message}`
+      })
+    }
+  }
+
+  // get the overLaping if there is one
+  const existingBooking = await checkOverLap(roomId, checkInDateTime, checkOutDateTime)
+  if(existingBooking){
+    return res.status(400).json({
+      error:"This room has already been booked!"
+    })
+  }
+
 
   // calculate the total price based on the total days of stay
   const pricePerNight = room.price
 
-  const calculatePrice = (checkInDate,checkOutDate,pricePerNight) => {
+  const calculatePrice = (checkInDateTime,checkOutDateTime,pricePerNight) => {
 
     // caculate duration 
-    const duration = checkOutDate.diff(checkInDate, "milliseconds")
+    const duration = checkOutDateTime.diff(checkInDateTime, "milliseconds")
     // convert to days
     const NumOfDays = Math.ceil(duration.as("days"))
     // round up price
@@ -78,23 +115,26 @@ if(room.isBooked === true) {
 
   }
 
-  const totalAmount = calculatePrice(checkInDate,checkOutDate,pricePerNight)
+  const totalAmount = calculatePrice(checkInDateTime,checkOutDateTime,pricePerNight)
 
   // save the booking in the dataBase
   const newBooking = await Booking.create({
       guestName,
       NoOfGuest,
-      checkIn,
-      checkOut,
+      checkIn:checkInDateTime,
+      checkOut:checkOutDateTime,
       perNight:pricePerNight,
+      checkInTime,
+      checkOutTime,
+      totalDay:totalAmount.totalDays,
       totalAmount:totalAmount.totalPrice,
       room:room._id,
       user:user._id
     });
 
-    // save the booking
-    room.isBooked = true
-    await room.save()
+    // // save the booking
+    // room.isBooked = true
+    // await room.save()
 
     res.status(201).json({
       message:"booking successfull",
@@ -104,8 +144,9 @@ if(room.isBooked === true) {
     res.status(500).json({ 
       error:error.message
     });
-  }
-};
+}
+}
+
 
 // const notifyRoomsAsVacant = async () => {
 //   try {
@@ -173,11 +214,126 @@ const getBookingById = async (req, res) => {
 };
 
 const updateBooking = async (req, res) => {
-  const { bookingId } = req.params;
   try {
+    // get the booking id
+    const { bookingId } = req.params;
+
+    // find the room
+    const booking = await Booking.findById(bookingId)
+    if (!booking) {
+      return res.status(404).json({
+        error:"room not found"
+      })
+    }
+
+    // get the room associated with the booking
+    const roomId = booking.room
+    const room = await roomModel.findById(roomId)
+
+    // get the details for te updates
+    const { NoOfGuest, guestName, checkIn, checkOut, checkInTime, checkOutTime } = req.body;
+
+    const checkInDateTime = DateTime.fromFormat(checkIn + ' ' + checkInTime, 'yyyy-MM-dd HH:mm', { zone: 'Africa/Lagos' });
+    const checkOutDateTime = DateTime.fromFormat(checkOut + ' ' + checkOutTime, 'yyyy-MM-dd HH:mm', { zone: 'Africa/Lagos' })
+
+    // Get the current date and time in Lagos timezone
+    const currentDateTime = DateTime.now().setZone('Africa/Lagos').startOf('day')
+
+ // Check if the dates are valid
+ if (!checkInDateTime.isValid || !checkOutDateTime.isValid ) {
+     return res.status(400).json({
+         error: 'Invalid check-in or check-out date format',
+     });
+ }
+
+  
+  // Check if the dates are valid
+  if (checkInDateTime >= checkOutDateTime) {
+       return res.status(400).json({
+       error: 'Invalid date range. Check-out date should be after or equal to check-in date',
+      });
+  }
+  
+  if (checkInDateTime < currentDateTime) {
+       return res.status(400).json({
+       error: 'Invalid date range. Check-in date should not be in the past!',
+      });
+  }
+
+  // function to check if the new booking overLaps an already existing booking
+  const checkOverLap = async (roomId, checkInDateTime, checkOutDateTime) => {
+    try {
+
+      // find the room from the booking
+       const existingBooking = await Booking.find({
+        room:roomId,
+        $or:[{
+          $and:[
+            { checkIn:{$lt:checkOutDateTime.toISO()}},
+            {checkOut:{$gt:checkInDateTime.toISO()}},
+            {paymentStatus:{$eq:"paid"}}
+          ]
+        }]
+
+      })
+
+      
+      return existingBooking.length > 0
+      
+    } catch (error) {
+      res.status(500).json({
+        error:`error checking for overlap booking: ${error.message}`
+      })
+    }
+  }
+
+  // get the overLaping if there is one
+  const existingBooking = await checkOverLap(roomId, checkInDateTime, checkOutDateTime)
+  if(existingBooking){
+    return res.status(400).json({
+      error:"This room has already been booked!"
+    })
+  }
+
+
+  // calculate the total price based on the total days of stay
+  const pricePerNight = room.price
+
+  const calculatePrice = (checkInDateTime,checkOutDateTime,pricePerNight) => {
+
+    // caculate duration 
+    const duration = checkOutDateTime.diff(checkInDateTime, "milliseconds")
+    // convert to days
+    const NumOfDays = Math.ceil(duration.as("days"))
+    // round up price
+    const total = NumOfDays * pricePerNight
+
+    // return calculation as an object 
+    return {
+      totalDays:NumOfDays,
+      totalPrice:total
+    }
+
+  }
+
+  const totalAmount = calculatePrice(checkInDateTime,checkOutDateTime,pricePerNight)
+
+  const updateOnly = {
+    NoOfGuest:NoOfGuest || booking.NoOfGuest,
+    guestName:guestName || booking.guestName,
+    checkIn:checkInDateTime || booking.checkInDateTime,
+    checkOut:checkOutDateTime || booking.checkOutDateTime,
+    perNight:pricePerNight || booking.perNight,
+    totalAmount:totalAmount.totalPrice || booking.totalPrice,
+    totalDay:totalAmount.totalDays || booking.totalDay
+    // checkInTime,
+    // checkOutTime
+  }
+
+
     const updatedBooking = await Booking.findByIdAndUpdate(
       bookingId,
-      req.body,
+      updateOnly,
       { new: true }
     );
     if (!updatedBooking) {
@@ -204,12 +360,86 @@ const deleteBooking = async (req, res) => {
   }
 };
 
+const checkOutPayment = async(req,res)=>{
+  try {
+
+    // get the booking id
+    const {bookingId} = req.params
+    // find the booking
+    const booking = await Booking.findById(bookingId)
+    if (!booking) {
+      return res.status(404).json({
+        error:"room not found"
+      })
+    }
+
+    const roomId = booking.room
+
+    const checkInDateTime = booking.checkIn
+    const checkOutDateTime = booking.checkOut
+      // function to check if the new booking overLaps an already existing booking
+  const checkOverLap = async (roomId, checkInDateTime, checkOutDateTime) => {
+    try {
+
+      // find the room from the booking
+       const existingBooking = await Booking.find({
+        room:roomId,
+        $or:[{
+          $and:[
+            { checkIn:{$lt:checkOutDateTime}},
+            {checkOut:{$gt:checkInDateTime}},
+            {paymentStatus:{$eq:"paid"}}
+          ]
+        }]
+
+      })
+
+      
+      return existingBooking.length > 0
+      
+    } catch (error) {
+      res.status(500).json({
+        error:`error checking for overlap booking: ${error.message}`
+      })
+    }
+  }
+
+  // get the overLaping if there is one
+  const existingBooking = await checkOverLap(roomId, checkInDateTime, checkOutDateTime)
+  if(existingBooking){
+    return res.status(400).json({
+      error:"room already booked by another client"
+    })
+  }
+
+    // if (booking.paymentStatus === "true") {
+    //   return res.status(400).json({
+    //     error:"room already booked by another client"
+    //   })
+    // }
+
+    booking.paymentStatus = true
+    await booking.save()
+
+    res.status(200).json({
+      message:"payment successfull",
+      data:booking
+    })
+    
+  } catch (error) {
+    res.status(500).json({
+      error:error.message
+    })
+  }
+}
+
 module.exports = {
   bookRoom,
   getBookings,
   getBookingById,
   updateBooking,
   deleteBooking,
+  checkOutPayment,
   // runBackgroundTask,
   // triggerBackgroundTask,
 };

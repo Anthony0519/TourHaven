@@ -32,13 +32,28 @@ const bookingSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    checkInTime: {
+      type: Date,
+      required: true,
+    },
+    checkOutTime : {
+      type: Date,
+      required: true,
+    },
     perNight: {
       type: Number,
-      required: true,
+    },
+    totalDay: {
+      type: Number,
     },
     totalAmount: {
       type: Number,
       required: true,
+    },
+    paymentStatus: {
+      type: String,
+      Enum:["pending","Paid"],
+      default:"pending",
     },
     bookedDate: {
       type: String,

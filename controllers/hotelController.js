@@ -662,7 +662,7 @@ exports.hotelSearch = async(req,res)=>{
                     image:rooms.roomImage,
                     price:rooms.price,
                     Number:rooms.roomNum
-                }))
+                })) 
             }
 
             // retun the hotels

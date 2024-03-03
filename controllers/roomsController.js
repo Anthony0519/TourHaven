@@ -73,21 +73,21 @@ exports.updateRoom = async (req, res) => {
             });
         }
 
-        if (room.roomImage) {
-            const oldImage = room.roomImage.split("/").pop().split(".")[0]
-            await cloud.uploader.destroy(oldImage)
+        // if (room.roomImage) {
+        //     const oldImage = room.roomImage.split("/").pop().split(".")[0]
+        //     await cloud.uploader.destroy(oldImage)
 
-        }
+        // }
 
-        // update the new image
-        const file = req.files.roomImage.tempFilePath
-        const newImage = await cloud.uploader.upload(file)
+        // // update the new image
+        // const file = req.files.roomImage.tempFilePath
+        // const newImage = await cloud.uploader.upload(file)
 
         // get the update details
         const editedRoom = {
             roomType,
             price,
-            roomImage:newImage.secure_url
+            // roomImage:newImage.secure_url
         }
 
         // make the update
