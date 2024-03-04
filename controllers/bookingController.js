@@ -63,8 +63,9 @@ const bookRoom = async (req, res) => {
   const checkOverLap = async (roomId, checkInDateTime, checkOutDateTime) => {
     try {
 
+      
       // find the room from the booking
-       const existingBooking = await Booking.find({
+      const existingBooking = await Booking.find({
         room:roomId,
         $or:[{
           $and:[
@@ -75,7 +76,7 @@ const bookRoom = async (req, res) => {
         }]
 
       })
-
+      // console.log(existingBooking)
       
       return existingBooking.length > 0
       
@@ -93,6 +94,7 @@ const bookRoom = async (req, res) => {
       error:"This room has already been booked!"
     })
   }
+  // console.log(existingBooking)
 
 
   // calculate the total price based on the total days of stay
@@ -374,6 +376,7 @@ const checkOutPayment = async(req,res)=>{
     }
 
     const roomId = booking.room
+    // console.log(roomId)
 
     const checkInDateTime = booking.checkIn
     const checkOutDateTime = booking.checkOut
@@ -418,7 +421,7 @@ const checkOutPayment = async(req,res)=>{
     //   })
     // }
 
-    booking.paymentStatus = true
+    booking.paymentStatus = "paid"
     await booking.save()
 
     res.status(200).json({
