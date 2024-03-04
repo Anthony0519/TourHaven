@@ -80,9 +80,12 @@ const hotelValidation = (req, res, next) => {
   const { error } = validateSignup.validate({hotelName,city,address,email,phoneNumber,password});
 
   if (error) {
-    return res.status(400).json({
-      error: error.details.map(detail => detail.message), 
-    });
+    const errors = error.details.map(detail => detail.message);
+    
+    // Send errors one by one
+    for (const errorMessage of errors) {
+    return res.status(400).json({ error: errorMessage });
+    }
   }
 
   next();
@@ -103,9 +106,12 @@ const resetPasswordValidation = (req, res, next) => {
   const { error } = validatePassword.validate({password});
 
   if (error) {
-    return res.status(400).json({
-      error: error.details.map(detail => detail.message), 
-    });
+    const errors = error.details.map(detail => detail.message);
+    
+    // Send errors one by one
+    for (const errorMessage of errors) {
+    return res.status(400).json({ error: errorMessage });
+    }
   }
 
   next();
@@ -132,9 +138,12 @@ const updateValidation = (req, res, next) => {
   const { error } = validateUpdate.validate({firstName,lastName,phoneNumber});
 
   if (error) {
-    return res.status(400).json({
-      error: error.details.map(detail => detail.message), 
-    });
+    const errors = error.details.map(detail => detail.message);
+    
+    // Send errors one by one
+    for (const errorMessage of errors) {
+    return res.status(400).json({ error: errorMessage });
+    }
   }
 
   next();

@@ -33,11 +33,11 @@ const bookingSchema = new mongoose.Schema(
       required: true,
     },
     checkInTime: {
-      type: Date,
+      type: String,
       required: true,
     },
     checkOutTime : {
-      type: Date,
+      type: String,
       required: true,
     },
     perNight: {
