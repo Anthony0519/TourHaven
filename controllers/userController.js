@@ -223,12 +223,12 @@ exports.resendVerification = async (req,res)=>{
 
         // verify the users email
         const link = `${req.protocol}://${req.get("host")}/api/v1/users/verify/${token}`
-        const html = dynamicMail(link,user.firstName,user.lastName.slice(0,1).toUpperCase())
+        // const html = dynamicMail(link,user.firstName,user.lastName.slice(0,1).toUpperCase())
 
         sendMail({
             email:user.email,
             subject: "KIND VERIFY YOUR ACCOUNT",
-            html:html
+            html:hello
         })
 
         res.status(200).json({

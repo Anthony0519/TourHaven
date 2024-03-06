@@ -178,8 +178,269 @@ const hotelMail = (link,hotelName)=>{
 
 }
 
+const bookedReceipt = (guestName,night,address,hotel,roomType,roomNo,paymentStatus,checkIn,checkOut,timeIn,timeOut,total)=>{
+
+    return`
+
+    <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .Recepitbody {
+        width: 30%;
+        height: 80%;
+        background: #fdfdf7;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+      }
+      .RecepitHeader {
+        width: 100%;
+        height: 15%;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding-inline: 10px;
+        flex-direction: column;
+        gap: 9%;
+      }
+      .RecepitHeader span{
+        color: #d9d9d9;
+      }
+      .RecepitContainer {
+        width: 100%;
+        height: 95%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .Guest {
+        width: 100%;
+        height: 8%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-inline: 10px;
+      }
+      .Night {
+        width: 100%;
+        height: 8%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-inline: 10px;
+      }
+      .Hotel {
+        width: 100%;
+        height: 8%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-inline: 10px;
+      }
+      .Address {
+        width: 100%;
+        height: 8%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-inline: 10px;
+      }
+      .RoomType {
+        width: 100%;
+        height: 8%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-inline: 10px;
+      }
+      .RoomNumber {
+        width: 100%;
+        height: 8%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-inline: 10px;
+      }
+      .payment {
+        width: 100%;
+        height: 8%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-inline: 10px;
+      }
+      .ArriveandDepart {
+        width: 90%;
+        height: 15%;
+        border-bottom: 1px solid grey;
+        border-top: 1px solid grey;
+        display: flex;
+        justify-content: space-between;
+      }
+      .Arrive{
+        width: 40%;
+        height: 100%;
+        /* background: #000; */
+        flex-direction: column;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .Depart{
+        width: 40%;
+        height: 100%;
+        /* background: #000; */
+        flex-direction: column;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .Arrow{
+        width: 10%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .Total{
+        width: 100%;
+        height: 30%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .Total h3{
+        font-size: 1.6rem;
+      }
+      .Total span{
+        color: #76c893;
+      }
+      @media screen and (max-width: 900px) {
+        .Recepitbody {
+          width: 60%;
+        }
+        .Arrive h3{
+          font-size: 0.9rem;
+        }
+        .Depart h3{
+          font-size: 0.9rem;
+        }
+      }
+      @media screen and (max-width: 650px) {
+        .Recepitbody {
+          width: 80%;
+        }
+        .Arrive h3{
+          font-size: 0.9rem;
+        }
+        .Depart h3{
+          font-size: 0.9rem;
+        }
+      }
+      @media screen and (max-width: 450px) {
+        .Recepitbody {
+          width: 80%;
+        }
+        .Arrive h3{
+          font-size: 0.9rem;
+        }
+        .Depart h3{
+          font-size: 0.9rem;
+        }
+      }
+      @media screen and (max-width: 320px) {
+        .Recepitbody {
+          width: 80%;
+        }
+        .Arrive h3{
+          font-size: 0.9rem;
+        }
+        .Depart h3{
+          font-size: 0.9rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="Recepitbody">
+      <div class="RecepitHeader">
+        <h2>Customer's Receipt</h2>
+        <span>Your reservation is now confirmed</span>
+      </div>
+      <div class="RecepitContainer">
+        <div class="Guest">
+          <h5>Guest</h5>
+          <span>${guestName}</span>
+        </div>
+        <div class="Night">
+          <h5>Night</h5>
+          <span>${night}</span>
+        </div>
+        <div class="Hotel">
+          <h5>Hotel</h5>
+          <span>${hotel}</span>
+        </div>
+        <div class="Address">
+          <h5>Address</h5>
+          <span>${address}</span>
+        </div>
+        <div class="RoomType">
+          <h5>RoomType</h5>
+          <span>${roomType}</span>
+        </div>
+        <div class="RoomNumber">
+          <h5>RoomNo</h5>
+          <span>${roomNo}</span>
+        </div>
+        <div class="payment">
+          <h5>paymentStatus</h5>
+          <span>${paymentStatus}</span>
+        </div>
+        <div class="ArriveandDepart">
+          <div class="Arrive">
+            <span>Arrive</span>
+            <h3>${checkIn}</h3>
+            <h4>${timeIn}</h4>
+          </div>
+          <div class="Depart">
+            <span>Depart</span>
+            <h3>${checkOut}</h3>
+            <h4>${timeOut}</h4>
+          </div>
+        </div>
+        <div class="Total">
+          <h3>Total: <span>${total}</span>
+          </h3>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+    
+    `
+}
+
 module.exports = {
   dynamicMail,
   resetPasswordMail,
-  hotelMail
+  hotelMail,
+  bookedReceipt
 }

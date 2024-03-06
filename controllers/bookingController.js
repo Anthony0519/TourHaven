@@ -8,7 +8,7 @@ const bookRoom = async (req, res) => {
     // get the user's id and room id
     const ID = req.user.userId
     const {roomId} = req.params
-    const { NoOfGuest, guestName, checkIn, checkOut, checkInTime, checkOutTime } = req.body;
+    const { NoOfGuest, guestName, checkIn, email, checkOut, checkInTime, checkOutTime } = req.body;
 
     // find the user
     const user = await userModel.findById(ID)
@@ -117,6 +117,7 @@ const bookRoom = async (req, res) => {
   const newBooking = await Booking.create({
       guestName,
       NoOfGuest,
+      email,
       checkIn:checkInDateTime,
       checkOut:checkOutDateTime,
       perNight:pricePerNight,
@@ -128,10 +129,11 @@ const bookRoom = async (req, res) => {
       user:user._id
     });
 
-// date to retuen for the frontend
+// data to return for the frontend
 const data = {
   bookingId:newBooking._id,
   Name:newBooking.guestName,
+  email:newBooking.email,
   NoOfGuest:newBooking.NoOfGuest,
   checkIn:newBooking.checkIn,
   checkOut:newBooking.checkOut,
@@ -183,6 +185,51 @@ const getBookingById = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+const getUsersBooking = async (req, res) => {
+  try {
+    // get the user's id based on the user logged in
+    const userId = req.user.userId
+
+    // find the booking associated to that user
+    const booking = await Booking.find({user:userId})
+    if (!booking || booking.length === 0) {
+      return res.status(404).json({ 
+        error: "Booking not found"
+       })
+    }
+
+    // check for the user's paid & unpaid booking
+    let payment = false
+    if(booking.paymentStatus === "paid"){
+      payment = true
+    }
+
+    const data = booking.map(bookings => ({
+    bookingId:bookings._id,
+    Name:bookings.guestName,
+    email:bookings.email,
+    NoOfGuest:bookings.NoOfGuest,
+    checkIn:bookings.checkIn,
+    checkOut:bookings.checkOut,
+    checkInTime:bookings.checkInTime,
+    checkOutTime:bookings.checkOutTime,
+    price:bookings.pricePerNight,
+    totalDays:bookings.totalDay,
+    Amountpaid:bookings.totalAmount,
+    paid:payment
+    }))
+      
+    res.status(200).json({
+      data
+    });
+
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message
+     });
+  }
+  }
 
 const updateBooking = async (req, res) => {
   try {
@@ -382,7 +429,7 @@ const checkOutPayment = async(req,res)=>{
     return res.status(400).json({
       error:"room already booked by another client"
     })
-  }
+  }    
 
     
 
@@ -408,6 +455,5 @@ module.exports = {
   updateBooking,
   deleteBooking,
   checkOutPayment,
-  // runBackgroundTask,
-  // triggerBackgroundTask,
+  getUsersBooking,
 };
