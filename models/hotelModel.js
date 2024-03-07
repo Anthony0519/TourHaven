@@ -22,7 +22,7 @@ const hotelSchema = new mongoose.Schema({
     }],
     hotelRooms:[{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"room"
+        ref:"rooms"
     }],
     city:{
         type:String,

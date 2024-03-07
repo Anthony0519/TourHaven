@@ -342,7 +342,7 @@ const hotelReceipt = (hotelName,address,guestName,checkIn,checkOut,roomType,room
       <p><strong>Check-out:</strong> ${checkOut}</p>
       <p><strong>Room Type:</strong> ${roomType}</p>
       <p><strong>room Num:</strong> ${roomNo}</p>
-      <p><strong>Number of Nights:</strong>${NoOfDays}</p>
+      <p><strong>Number of Nights:</strong> ${NoOfDays}</p>
     </div>
     <div class="total">
       <p><strong>Total Cost:</strong> ${totalAmount}</p>
