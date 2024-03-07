@@ -64,7 +64,7 @@ exports.createUser = async (req,res)=>{
 
         // success message
         res.status(201).json({
-            message:"Account created successfully... Kindly check your email for verification",
+            message:"Account created successfully... Kindly check your email or spam for verification",
             user
         })
 
