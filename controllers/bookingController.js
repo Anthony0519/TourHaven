@@ -1,6 +1,8 @@
 const Booking = require("../models/bookingModel");
 const userModel = require("../models/userModel")
 const roomModel = require("../models/roomModel")
+const {receiptMail} = require("../Utils/sendMail")
+const {bookedReceipt,hotelReceipt} = require("../Utils/emailtemplate")
 const {DateTime} = require("luxon")
 
 const bookRoom = async (req, res) => {
@@ -16,7 +18,7 @@ const bookRoom = async (req, res) => {
       return res.status(404).json({
           error:"user not found"
       })
-  }
+  } 
 // find the room
   const room = await roomModel.findById(roomId)
   if (!room) {
@@ -118,6 +120,8 @@ const bookRoom = async (req, res) => {
       guestName,
       NoOfGuest,
       email,
+      dayIn:checkIn,
+      dayOut:checkOut,
       checkIn:checkInDateTime,
       checkOut:checkOutDateTime,
       perNight:pricePerNight,
@@ -139,6 +143,8 @@ const data = {
   checkOut:newBooking.checkOut,
   checkInTime:newBooking.checkInTime,
   checkOutTime:newBooking.checkOutTime,
+  dayIn:newBooking.dayIn,
+  dayOut:newBooking.dayOut,
   price:newBooking.pricePerNight,
   totalDays:newBooking.totalDay,
   AmountToPay:newBooking.totalAmount
@@ -279,7 +285,7 @@ const updateBooking = async (req, res) => {
   }
 
   // function to check if the new booking overLaps an already existing booking
-  const checkOverLap = async (roomId, checkInDateTime, checkOutDateTime) => {
+  const checkOverLap = async (roomId, email, checkInDateTime, checkOutDateTime) => {
     try {
 
       // find the room from the booking
@@ -384,7 +390,7 @@ const checkOutPayment = async(req,res)=>{
     // get the booking id
     const {bookingId} = req.params
     // find the booking
-    const booking = await Booking.findById(bookingId)
+    const booking = await Booking.findById(bookingId).populate({path:"room",populate:{path:"hotel"}})
     if (!booking) {
       return res.status(404).json({
         error:"room not found"
@@ -431,10 +437,33 @@ const checkOutPayment = async(req,res)=>{
     })
   }    
 
-    
-
     booking.paymentStatus = "paid"
     await booking.save()
+
+    const hotelEmail = booking.room.hotel.email
+    const hotel = booking.room.hotel.hotelName
+    const address = booking.room.hotel.address
+    const roomType = booking.room.roomType
+    const roomNo = booking.room.roomNum
+    const paymentStatus = booking.paymentStatus
+    const checkIn = `${booking.dayIn} : ${booking.checkInTime}`
+    const checkOut = `${booking.dayOut} : ${booking.checkOutTime}`
+    const totalAmount = booking.totalAmount
+
+    const customer_html = bookedReceipt(booking.guestName,booking.totalDay,address,hotel,roomType,roomNo,paymentStatus,checkIn,checkOut,totalAmount)
+    const hotel_html = hotelReceipt(hotel,address,booking.guestName,checkIn,checkOut,roomType,roomNo,booking.totalDay,totalAmount)
+
+    receiptMail({
+        email:booking.email,
+        subject: "BOOKING RECEIPT",
+        html:customer_html
+    })
+
+    receiptMail({
+        email:hotelEmail,
+        subject: "RESERVERD RECEIPT",
+        html:hotel_html
+    })
 
     res.status(200).json({
       message:"payment successfull",

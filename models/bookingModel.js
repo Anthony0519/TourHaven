@@ -16,6 +16,10 @@ const bookingSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    email: {
+      type: String,
+      required: true,
+    },
     room: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "rooms",
@@ -30,6 +34,14 @@ const bookingSchema = new mongoose.Schema(
     },
     checkOut: {
       type: Date,
+      required: true,
+    },
+    dayIn: {
+      type: String,
+      required: true,
+    },
+    dayOut: {
+      type: String,
       required: true,
     },
     checkInTime: {

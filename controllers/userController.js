@@ -1,7 +1,7 @@
 const userModel = require("../models/userModel")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
-const sendMail = require("../Utils/sendMail")
+const {sendEmail} = require("../Utils/sendMail")
 const {dynamicMail,resetPasswordMail} = require("../Utils/emailtemplate")
 
 // create a new user
@@ -56,7 +56,7 @@ exports.createUser = async (req,res)=>{
         const link = `${req.protocol}://${req.get("host")}/api/v1/users/verify/${token}`
         const html = dynamicMail(link,user.firstName,user.lastName.slice(0,1).toUpperCase())
 
-        sendMail({
+        sendEmail({
             email:user.email,
             subject: "KIND VERIFY YOUR ACCOUNT",
             html:html
