@@ -23,7 +23,7 @@ router.route("/hotel-reset_password/:token").post(resetPasswordValidation,resetP
 
 router.route("/hotel-change-profileimage").put(hotelAuth,changeProfileImage)
 
-router.route("/search-location/:search").get(Search)
+router.route("/search-location/").get(Search)
 
 router.route("/search-hotels/:id").get(hotelSearch)
 

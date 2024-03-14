@@ -548,26 +548,58 @@ exports.Search = async(req,res)=>{
     try {
 
         // get the user's search
-        const {search} = req.params
-        if(!search){
-            return res.status(400).json({
-                error:"can't search an empty field"
-            })
-        }
+        // const {search} = req.params
+        // if(!search){
+        //     return res.status(400).json({
+        //         error:"can't search an empty field"
+        //     })
+        // }
 
-        const convertedSearch = search.toLowerCase().charAt(0).toUpperCase() + search.slice(1)
+        const searchQuery = req.query.q  ;
+        // console.log(searchQuery)
+        // const convertedSearch = search.toLowerCase().charAt(0).toUpperCase() + search.slice(1)
 
         // check if the search is a location
-        const loc = await locModel.findOne({loc:convertedSearch}).populate({path:"hotel", populate:{path:"hotelRooms"}})
+        // const loc = await locModel.findOne({loc:convertedSearch}).populate({path:"hotel", populate:{path:"hotelRooms"}})
 
-        if (!loc) {
-
+        
             // if not location search in hotel
-            const hotel = await hotelModel.find().where("hotelName").equals(`${convertedSearch}`).populate("hotelRooms")
+            const hotel = await hotelModel.find({ hotelName: { $regex: `^${searchQuery}`, $options: 'i' } }).populate("hotelRooms")
 
-            if(!hotel || hotel.length === 0){
+        if(!hotel || hotel.length === 0){
+            const loc = await locModel.find({ loc: { $regex: `^${searchQuery}`, $options: 'i' } }).populate({path:"hotel", populate:{path:"hotelRooms"}})
+    // console.log(loc[0].hotel)
+    
+            // extract details from the locstion returned
+            const extractedData = loc[0].hotel.map(hotel => ({
+                id:hotel._id,
+                name: hotel.hotelName,
+                description: hotel.desc,
+                profileImage: hotel.profileImage,
+                city: hotel.city,
+                address: hotel.address,
+                features: hotel.features,
+                stars: hotel.stars,
+                hotelImages: hotel.hotelImages,
+                availableRooms: hotel.hotelRooms.map(room => ({
+                    id:room._id,
+                    Type: room.roomType,
+                    image: room.roomImage,
+                    price: room.price,
+                    Number: room.roomNum
+                }))
+            }));
+    
+           return res.status(200).json({
+                message:`${extractedData.length} Hotels in ${searchQuery},Lagos`,
+                data:extractedData
+            })
+
+        }
+
+                if(hotel.length === 0){
                 return res.status(404).json({
-                    error:`No result found for ${search}`
+                    error:`No result found for ${searchQuery}`
                 })
             }
 
@@ -590,39 +622,12 @@ exports.Search = async(req,res)=>{
                     Number:rooms.roomNum
                 }))
             }))
-
+        
             // retun the hotels
-           return res.status(200).json({
-                message:`${hotel.length} hotel found for ${search}`,
+            res.status(200).json({
+                message:`${hotel.length} hotel found for ${searchQuery}`,
                 data:extractedHotel
             })
-
-        }
-
-        // extract details from the locstion returned
-        const extractedData = loc.hotel.map(hotel => ({
-            id:hotel._id,
-            name: hotel.hotelName,
-            description: hotel.desc,
-            profileImage: hotel.profileImage,
-            city: hotel.city,
-            address: hotel.address,
-            features: hotel.features,
-            stars: hotel.stars,
-            hotelImages: hotel.hotelImages,
-            availableRooms: hotel.hotelRooms.map(room => ({
-                id:room._id,
-                Type: room.roomType,
-                image: room.roomImage,
-                price: room.price,
-                Number: room.roomNum
-            }))
-        }));
-
-        res.status(200).json({
-            message:`${loc.hotel.length} Hotels in ${search},Lagos`,
-            data:extractedData
-        })
         
     } catch (err) {
         res.status(500).json({
