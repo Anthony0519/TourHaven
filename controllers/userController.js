@@ -381,7 +381,7 @@ exports.changeProfilePics = async (req, res) => {
     const ID = req.user.userId;
     exports.getOneUser = async (req, res) => {
       try {
-        // get the users id
+        // get the users \\\\\\\\\\\\\\\\\\\\\\
         const ID = req.user.userId;
 
         // find the user
